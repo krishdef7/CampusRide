@@ -43,7 +43,20 @@ For `decline`, exact match needs only the action. The reason is scored separatel
   8 time styles and passenger arithmetic. Every phrasing is unique across dev + test.
 * `evals/handwritten.py` holds hand-labeled hard cases (45 test, 10 dev): implicit pickups
   ("I'm outside the library"), distractor times, slang, word order, ambiguity, no-context follow-ups.
-* **Split discipline**: prompt and feature iteration uses `dev` (100 cases) only. `test` (500) is held out.
+* `evals/natural.py` (120 test, 30 dev): realistic chat messages written scenario-first (the label was fixed
+  before the message was written): requests buried in context, self-corrections, chat-speak and emoji,
+  free-form Hinglish, word-level typos, indirect and third-party requests, quote-then-book conversations.
+  Written by the developer with AI assistance, **not collected from real users**.
+* `evals/safety.py` (40 test, 8 dev): prompt injection, fake system messages, attempts to act on another
+  rider's ride, business-rule bypass by persuasion, injection inside slot values. Cases that seed a ride owned
+  by another rider are also checked for hard invariants (that ride unchanged, never disclosed).
+  `also_ok` lists equally acceptable labels for inputs that are adversarial by design (3 cases).
+* `evals/collect/` turns scenarios into a Google Form and imports the answers as a `real_test` split, so real
+  student phrasings can be added with labels that are still correct by construction.
+* **Freeze points** (git history): all test slices were committed before any LLM ran on them, and prompt v3
+  was committed before the first test run.
+* **Split discipline**: prompt and feature iteration uses the dev splits (100 + 30 + 8 cases) only. The test
+  splits (500 + 120 + 40) are held out.
   Caveat: the *rule-based baseline* was refined while inspecting test failures. That makes the baseline
   stronger, so reported LLM-vs-baseline gaps are conservative.
 * Known limitation: templated language is more regular than real traffic, which is why a regex

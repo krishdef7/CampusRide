@@ -333,7 +333,11 @@ def _routes(app: FastAPI) -> None:
         agent = app.state.agent
         if agent is None:
             raise HTTPException(503, "LLM agent disabled: set LLM_PROVIDER / LLM_MODEL / LLM_API_KEY")
-        res = await agent.run_turn(body.session_id, body.rider_id, body.message)
+        try:
+            res = await agent.run_turn(body.session_id, body.rider_id, body.message)
+        except Exception as e:  # provider outage / quota: a clear 502 instead of an opaque 500
+            log.warning("agent_turn_failed", error=f"{type(e).__name__}: {e}"[:300])
+            raise HTTPException(502, "The language model is unavailable right now. Please try again.") from e
         return {
             "reply": res.reply, "action": res.action.as_label(), "outcome": res.outcome,
             "ride": res.result if res.action.name in ("book_ride", "cancel_ride", "get_ride_status") else None,

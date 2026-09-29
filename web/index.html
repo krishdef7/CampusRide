@@ -92,7 +92,7 @@ document.getElementById('f').onsubmit = async e => {
                                                           body: JSON.stringify({name: session})})).json()).id;
   const r = await fetch('/agent/chat', {method: 'POST', headers: {'content-type': 'application/json'},
                                         body: JSON.stringify({session_id: session, rider_id: riderId, message: text})});
-  if (!r.ok) { add('bot', (await r.json()).detail || 'error'); return; }
+  if (!r.ok) { add('bot', (await r.json().catch(() => ({}))).detail || `error ${r.status}`); return; }
   const res = await r.json();
   add('bot', res.reply, `${res.action.action} · ${res.latency_ms} ms · ${res.llm_calls} LLM call(s)${res.repairs ? ' · ' + res.repairs + ' repair' : ''}`);
   if (res.ride && res.ride.id && ['book_ride', 'get_ride_status'].includes(res.action.action)) watchRide(res.ride.id);
