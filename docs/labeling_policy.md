@@ -1,0 +1,49 @@
+# Agent eval: labeling policy
+
+Every eval label follows these rules. They were fixed before any model was evaluated, and the same
+rules are stated in the agent's system prompt. A case counts as an **exact match** only if the
+predicted action *and every normalized argument* equal the label.
+
+## Actions
+
+| Action | When |
+|---|---|
+| `book_ride` | The user wants a ride, now or later. |
+| `get_quote` | The user asks about price, ETA or availability *without* asking to book. |
+| `cancel_ride` | The user wants to cancel. `ride_id` only if they give a number, else `null` (= latest active ride). |
+| `get_ride_status` | The user asks where/how their ride is. `ride_id` as above (`null` = latest ride). |
+| `clarify` | A required field (pickup or destination) is missing, unknown or ambiguous. `missing` = the set of such fields. |
+| `decline` | Not about campus rides (`out_of_scope`), outside the service area (`out_of_area`), impossible passenger count for the vehicle (`capacity`), pickup = destination (`same_place`). |
+
+For `decline`, exact match needs only the action. The reason is scored separately ("reason correct").
+
+## Normalized arguments
+
+* **Places**: gazetteer IDs (`rajendra`, `lhc`, ...). Abbreviations, nicknames, typos and "the library"
+  style references resolve to the obvious place. Generic references ("my hostel", "the department",
+  "Raj bhawan", which could be Rajendra or Rajiv) are ambiguous and must be clarified, never guessed.
+* **Time** (`pickup_at`, booking only): `asap` when no time is given or for now / asap / abhi / right away.
+  Otherwise an absolute minute in IST.
+  * "in 20 min" → now + 20 min. "tomorrow" / "kal" → +1 day. "day after tomorrow" / "parso" → +2.
+    Weekday names → the next such day (evaluation cases never use today's or tomorrow's weekday name).
+  * A clock time with no am/pm and no cue → the next occurrence after now ("at 8" at 14:00 → 20:00).
+    Cues: morning / subah → am, evening / shaam / night / raat / tonight → pm.
+  * A time mentioned for something else ("my train is at 7:30, pick me up at 6:45") is not the pickup time.
+* **Passengers**: everyone riding, user included ("me and 2 friends" = 3). Default 1.
+* **Vehicle**: only if explicitly requested (e-rickshaw / toto / e-rick, auto, cab / car / taxi); otherwise `null` (= any).
+
+## Dataset construction
+
+* `evals/build_dataset.py` generates cases from slot templates, so labels are correct by
+  construction. It covers ~16 booking phrasings (English, Hinglish, terse, polite, reversed order),
+  place surface forms (full names, abbreviations like RB/RKB/KB, lowercase, one-character typos),
+  8 time styles and passenger arithmetic. Every phrasing is unique across dev + test.
+* `evals/handwritten.py` holds hand-labeled hard cases (45 test, 10 dev): implicit pickups
+  ("I'm outside the library"), distractor times, slang, word order, ambiguity, no-context follow-ups.
+* **Split discipline**: prompt and feature iteration uses `dev` (100 cases) only. `test` (500) is held out.
+  Caveat: the *rule-based baseline* was refined while inspecting test failures. That makes the baseline
+  stronger, so reported LLM-vs-baseline gaps are conservative.
+* Known limitation: templated language is more regular than real traffic, which is why a regex
+  baseline scores well on the templated slices. The hand-written and typo slices are the better
+  signal of real-world robustness. Every production turn is logged to `agent_turns` so real
+  failures can be mined into new eval cases.

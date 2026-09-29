@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CampusRide</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root { --bg:#0f1115; --panel:#171a21; --line:#262b36; --text:#e6e8ee; --muted:#8b93a7; --accent:#4f8cff; --ok:#3fb950; --warn:#d29922; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:14px/1.45 system-ui, -apple-system, Segoe UI, sans-serif; background:var(--bg); color:var(--text);
+         display:grid; grid-template-columns: 1fr 380px; height:100vh; }
+  #map { height:100vh; }
+  aside { display:flex; flex-direction:column; border-left:1px solid var(--line); background:var(--panel); min-height:0; }
+  header { padding:14px 16px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:16px; margin:0 0 4px; }
+  header .stats { color:var(--muted); font-size:12px; }
+  #log { flex:1; overflow-y:auto; padding:12px 16px; display:flex; flex-direction:column; gap:8px; }
+  .msg { padding:8px 10px; border-radius:10px; max-width:92%; white-space:pre-wrap; }
+  .me { align-self:flex-end; background:var(--accent); color:#fff; }
+  .bot { align-self:flex-start; background:#222734; }
+  .meta { font-size:11px; color:var(--muted); margin-top:3px; }
+  .event { align-self:center; font-size:12px; color:var(--warn); }
+  form { display:flex; gap:8px; padding:12px 16px; border-top:1px solid var(--line); }
+  input { flex:1; padding:9px 10px; border-radius:8px; border:1px solid var(--line); background:#0f1115; color:var(--text); }
+  button { padding:9px 14px; border:0; border-radius:8px; background:var(--accent); color:#fff; cursor:pointer; }
+  .banner { font-size:11px; color:var(--muted); padding:0 16px 10px; }
+  @media (max-width: 800px) { body { grid-template-columns: 1fr; grid-template-rows: 45vh 55vh; } #map { height:45vh; } }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<aside>
+  <header>
+    <h1>CampusRide · IIT Roorkee</h1>
+    <div class="stats" id="stats">connecting…</div>
+  </header>
+  <div class="banner">Demo environment: drivers and rides are simulated.</div>
+  <div id="log"></div>
+  <form id="f"><input id="q" autocomplete="off" placeholder="e.g. RB to LHC at 6pm for 2 people"><button>Send</button></form>
+</aside>
+<script>
+const map = L.map('map').setView([29.8665, 77.8955], 16);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19, attribution: '© OpenStreetMap'}).addTo(map);
+const colors = {available:'#3fb950', assigned:'#d29922', on_trip:'#f85149'};
+const markers = new Map();
+const log = document.getElementById('log');
+const session = 'web-' + Math.random().toString(36).slice(2, 8);
+let riderId = null, rideSocket = null;
+
+fetch('/places').then(r => r.json()).then(ps => ps.forEach(p =>
+  L.circleMarker([p.lat, p.lon], {radius: 4, color: '#8b93a7', weight: 1}).bindTooltip(p.name).addTo(map)));
+
+function add(cls, text, meta) {
+  const d = document.createElement('div'); d.className = 'msg ' + cls; d.textContent = text;
+  if (meta) { const m = document.createElement('div'); m.className = 'meta'; m.textContent = meta; d.appendChild(m); }
+  log.appendChild(d); log.scrollTop = log.scrollHeight;
+}
+
+const live = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/live`);
+live.onmessage = ev => {
+  const m = JSON.parse(ev.data);
+  if (m.type !== 'drivers') return;
+  const seen = new Set();
+  let counts = {available: 0, assigned: 0, on_trip: 0};
+  for (const d of m.drivers) {
+    seen.add(d.id); counts[d.status] = (counts[d.status] || 0) + 1;
+    let mk = markers.get(d.id);
+    if (!mk) { mk = L.circleMarker([d.lat, d.lon], {radius: 5, weight: 0, fillOpacity: .9}).addTo(map); markers.set(d.id, mk); }
+    mk.setLatLng([d.lat, d.lon]).setStyle({fillColor: colors[d.status] || '#888'});
+  }
+  for (const [id, mk] of markers) if (!seen.has(id)) { map.removeLayer(mk); markers.delete(id); }
+  document.getElementById('stats').textContent =
+    `${counts.available} available · ${counts.assigned} en route · ${counts.on_trip} on trip`;
+};
+
+function watchRide(id) {
+  if (rideSocket) rideSocket.close();
+  rideSocket = new WebSocket(`${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/ws/rides/${id}`);
+  rideSocket.onmessage = ev => {
+    const m = JSON.parse(ev.data);
+    if (m.type === 'ride_event') add('event', `ride #${m.ride_id} → ${m.status.replace('_', ' ')}`);
+  };
+}
+
+document.getElementById('f').onsubmit = async e => {
+  e.preventDefault();
+  const q = document.getElementById('q'); const text = q.value.trim(); if (!text) return; q.value = '';
+  add('me', text);
+  if (!riderId) riderId = (await (await fetch('/riders', {method: 'POST', headers: {'content-type': 'application/json'},
+                                                          body: JSON.stringify({name: session})})).json()).id;
+  const r = await fetch('/agent/chat', {method: 'POST', headers: {'content-type': 'application/json'},
+                                        body: JSON.stringify({session_id: session, rider_id: riderId, message: text})});
+  if (!r.ok) { add('bot', (await r.json()).detail || 'error'); return; }
+  const res = await r.json();
+  add('bot', res.reply, `${res.action.action} · ${res.latency_ms} ms · ${res.llm_calls} LLM call(s)${res.repairs ? ' · ' + res.repairs + ' repair' : ''}`);
+  if (res.ride && res.ride.id && ['book_ride', 'get_ride_status'].includes(res.action.action)) watchRide(res.ride.id);
+};
+</script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+{
+  "run_at": "2026-09-29T08:04:53",
+  "data": "SIMULATED requests and drivers",
+  "env": {
+    "where": "API, Postgres and load generator in Docker (Linux containers, Docker Desktop / WSL2)",
+    "host_cpu": "AMD Ryzen (Family 25 Model 80)",
+    "cores": 16,
+    "python": "3.12.14"
+  },
+  "config": {
+    "drivers": 1000,
+    "riders": 2000,
+    "api": "uvicorn x4 workers, uvloop + httptools, asyncpg pool 20/worker",
+    "client_processes": 4,
+    "location_updates_per_s": 200
+  },
+  "runs": [
+    {
+      "target_rate_rps": 200.0,
+      "requests": 10000,
+      "client_processes": 4,
+      "wall_s": 53.84,
+      "achieved_throughput_rps": 196.4,
+      "success_rate": 1.0,
+      "errors": {},
+      "matched_rate": 1.0,
+      "latency_ms": {
+        "p50": 10.9,
+        "p90": 14.7,
+        "p95": 16.8,
+        "p99": 27.5,
+        "max": 306.0,
+        "mean": 11.9
+      },
+      "client_schedule_lag_ms_p99": 1.5,
+      "ws_fanout_ms": {
+        "events": 30000,
+        "p50": 5.8,
+        "p95": 7.9
+      },
+      "server_match_histogram": {
+        "count": 10000,
+        "p50_le_ms": 10.0,
+        "p95_le_ms": 25.0,
+        "p99_le_ms": 25.0
+      },
+      "invariants": {
+        "drivers_with_multiple_active_rides": 0,
+        "capacity_violations": 0,
+        "vehicle_type_violations": 0,
+        "driver_ride_state_mismatches": 0,
+        "non_linear_driver_histories": 0,
+        "claims_without_prior_release": 0,
+        "claims_audited": 10000,
+        "transitions_audited": 30000,
+        "wallclock_stamp_inversions_info": 16,
+        "rides_total": 10000,
+        "rides_assigned_ever": 10000,
+        "rides_completed": 10000,
+        "pg_version": "PostgreSQL 16.4 (Debian 16.4-1.pgdg110+2) on x86_64-pc-linux-gnu"
+      }
+    }
+  ]
+}

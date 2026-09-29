@@ -1,0 +1,253 @@
+"""Day-ahead zone demand forecasting: chronological split, baselines, LightGBM, rolling-origin backtest,
+bootstrap confidence intervals and a feature-group ablation.
+
+    python -m campusride.forecasting.pipeline            # writes evals/reports/forecast_report.{json,md}
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from dataclasses import dataclass
+from pathlib import Path
+
+import lightgbm as lgb
+import numpy as np
+import pandas as pd
+
+from campusride.forecasting.features import ALL_FEATURES, FEATURE_GROUPS, REQUIRED, build_features
+from campusride.forecasting.simulate import simulate
+
+REPORT_DIR = Path(__file__).resolve().parents[3] / "evals" / "reports"
+MODEL_DIR = Path(__file__).resolve().parents[3] / "models"
+
+TRAIN_END = pd.Timestamp("2026-01-31")
+VAL_END = pd.Timestamp("2026-02-28")  # test = everything after, i.e. 2026-03-01 .. 2026-05-03
+PARAMS = dict(objective="poisson", learning_rate=0.1, num_leaves=31, min_data_in_leaf=40, feature_fraction=0.9,
+              bagging_fraction=0.9, bagging_freq=1, lambda_l2=1.0, verbose=-1, seed=0, num_threads=4)
+
+
+@dataclass
+class Split:
+    train: pd.DataFrame
+    val: pd.DataFrame
+    test: pd.DataFrame
+
+
+def split(df: pd.DataFrame) -> Split:
+    df = df.dropna(subset=REQUIRED)
+    return Split(df[df.date <= TRAIN_END], df[(df.date > TRAIN_END) & (df.date <= VAL_END)], df[df.date > VAL_END])
+
+
+def mae(y, p):
+    return float(np.mean(np.abs(y - p)))
+
+
+def rmse(y, p):
+    return float(np.sqrt(np.mean((y - p) ** 2)))
+
+
+def wape(y, p):
+    return float(np.sum(np.abs(y - p)) / np.sum(y))
+
+
+def metrics(y, p) -> dict:
+    return {"mae": round(mae(y, p), 4), "rmse": round(rmse(y, p), 4), "wape": round(wape(y, p), 4)}
+
+
+def fit(train: pd.DataFrame, features: list[str], rounds: int, val: pd.DataFrame | None = None):
+    dtrain = lgb.Dataset(train[features], train["y"], categorical_feature=[f for f in ("zone_code",) if f in features])
+    if val is not None:
+        dval = lgb.Dataset(val[features], val["y"], reference=dtrain)
+        booster = lgb.train(PARAMS, dtrain, num_boost_round=3000, valid_sets=[dval],
+                            callbacks=[lgb.early_stopping(100, verbose=False)])
+        return booster, booster.best_iteration
+    return lgb.train(PARAMS, dtrain, num_boost_round=rounds), rounds
+
+
+def rolling_backtest(df: pd.DataFrame, features: list[str], rounds: int, retrain_every_days: int = 7) -> np.ndarray:
+    """Expanding-window, rolling-origin evaluation: refit weekly on everything before the forecast week."""
+    test_days = sorted(df.loc[df.date > VAL_END, "date"].unique())
+    preds = pd.Series(np.nan, index=df.index)
+    for i in range(0, len(test_days), retrain_every_days):
+        block = test_days[i:i + retrain_every_days]
+        hist = df[df.date < block[0]]
+        model, _ = fit(hist, features, rounds)
+        mask = df.date.isin(block)
+        preds[mask] = model.predict(df.loc[mask, features])
+    return preds[df.date > VAL_END].to_numpy()
+
+
+def block_bootstrap_improvement(y, base, model, days, n=2000, seed=0) -> tuple[float, float, float]:
+    """95% CI of relative MAE reduction, resampling whole days (slots within a day are correlated)."""
+    rng = np.random.default_rng(seed)
+    uniq = np.unique(days)
+    idx_by_day = {d: np.where(days == d)[0] for d in uniq}
+    ae_b, ae_m = np.abs(y - base), np.abs(y - model)
+    day_b = np.array([ae_b[idx_by_day[d]].sum() for d in uniq])
+    day_m = np.array([ae_m[idx_by_day[d]].sum() for d in uniq])
+    pt = 1 - day_m.sum() / day_b.sum()
+    samples = []
+    for _ in range(n):
+        s = rng.integers(0, len(uniq), len(uniq))
+        samples.append(1 - day_m[s].sum() / day_b[s].sum())
+    lo, hi = np.percentile(samples, [2.5, 97.5])
+    return float(pt), float(lo), float(hi)
+
+
+def regime(row_phase: pd.Series, is_fest: pd.Series, phase_changed: pd.Series) -> pd.Series:
+    r = np.where(is_fest == 1, "fest", np.where(phase_changed == 1, "phase_transition",
+                 np.where(row_phase.isin(["midterm", "endterm"]), "exams", row_phase)))
+    return pd.Series(r, index=row_phase.index)
+
+
+def run(seed: int = 7, write: bool = True) -> dict:
+    t0 = time.perf_counter()
+    raw = simulate(seed=seed)
+    df = build_features(raw)
+    sp = split(df)
+    full = pd.concat([sp.train, sp.val, sp.test])
+    test = sp.test
+    y = test["y"].to_numpy(float)
+
+    # Tune the number of boosting rounds once on the validation month, then freeze it.
+    _, best_rounds = fit(sp.train, ALL_FEATURES, 0, val=sp.val)
+    best_rounds = max(best_rounds, 50)
+
+    preds = {
+        "seasonal_naive_7d": test["lag_7d"].to_numpy(float),
+        "naive_1d": test["lag_1d"].to_numpy(float),
+        "mean_4w_same_dow": test["mean_4w_same_dow"].to_numpy(float),
+        "lightgbm": rolling_backtest(full, ALL_FEATURES, best_rounds),
+        "oracle_true_rate": test["lam"].to_numpy(float),
+    }
+    results = {name: metrics(y, p) for name, p in preds.items()}
+    base = preds["seasonal_naive_7d"]
+    pt, lo, hi = block_bootstrap_improvement(y, base, preds["lightgbm"], test["date"].to_numpy())
+    pt4, lo4, hi4 = block_bootstrap_improvement(y, preds["mean_4w_same_dow"], preds["lightgbm"], test["date"].to_numpy())
+    oracle_gap = 1 - results["oracle_true_rate"]["mae"] / results["seasonal_naive_7d"]["mae"]
+
+    # Where does the improvement come from?
+    reg = regime(test["phase"], test["is_fest"], test["phase_changed_7d"]).to_numpy()
+    by_regime = {}
+    for r in sorted(set(reg)):
+        m = reg == r
+        by_regime[r] = {"n_slots": int(m.sum()), "seasonal_naive_mae": round(mae(y[m], base[m]), 3),
+                        "lightgbm_mae": round(mae(y[m], preds["lightgbm"][m]), 3),
+                        "improvement": round(1 - mae(y[m], preds["lightgbm"][m]) / mae(y[m], base[m]), 4)}
+    by_zone = {
+        z: {"seasonal_naive_mae": round(mae(y[m], base[m]), 3), "lightgbm_mae": round(mae(y[m], preds["lightgbm"][m]), 3)}
+        for z in sorted(test["zone"].unique()) for m in [(test["zone"] == z).to_numpy()]
+    }
+
+    # Ablation: drop one feature group at a time (same rolling protocol, same rounds).
+    ablation = {"all_features": results["lightgbm"]["mae"]}
+    for group, cols in FEATURE_GROUPS.items():
+        if group == "structure":
+            continue
+        feats = [f for f in ALL_FEATURES if f not in cols]
+        ablation[f"without_{group}"] = round(mae(y, rolling_backtest(full, feats, best_rounds)), 4)
+
+    # Final model on everything up to the end of validation, saved for serving.
+    final_model, _ = fit(pd.concat([sp.train, sp.val]), ALL_FEATURES, best_rounds)
+    report = {
+        "data": f"SYNTHETIC - generated by campusride.forecasting.simulate (documented process, seed={seed})",
+        "task": "day-ahead forecast of ride requests per zone per 30-min slot (9 zones x 48 slots)",
+        "split": {"train": f"{sp.train.date.min().date()}..{TRAIN_END.date()}",
+                  "validation": f"{(TRAIN_END + pd.Timedelta(days=1)).date()}..{VAL_END.date()}",
+                  "test": f"{sp.test.date.min().date()}..{sp.test.date.max().date()}",
+                  "n_test_slots": int(len(test)), "n_test_days": int(test.date.nunique())},
+        "protocol": "rolling-origin, expanding window, weekly refit; features and boosting rounds chosen on validation only",
+        "boosting_rounds": int(best_rounds),
+        "results": results,
+        "lightgbm_vs_seasonal_naive": {"mae_reduction": round(pt, 4), "ci95": [round(lo, 4), round(hi, 4)],
+                                       "oracle_ceiling_reduction": round(oracle_gap, 4),
+                                       "share_of_achievable_gain": round(pt / oracle_gap, 4) if oracle_gap > 0 else None},
+        "lightgbm_vs_best_baseline_mean_4w": {"mae_reduction": round(pt4, 4), "ci95": [round(lo4, 4), round(hi4, 4)]},
+        "by_regime": by_regime,
+        "by_zone": by_zone,
+        "ablation_mae": ablation,
+        "feature_importance_gain": {
+            f: round(float(v), 1) for f, v in sorted(
+                zip(ALL_FEATURES, final_model.feature_importance("gain"), strict=False), key=lambda kv: -kv[1])
+        },
+        "runtime_s": round(time.perf_counter() - t0, 1),
+    }
+    if write:
+        REPORT_DIR.mkdir(parents=True, exist_ok=True)
+        MODEL_DIR.mkdir(parents=True, exist_ok=True)
+        final_model.save_model(str(MODEL_DIR / "demand_lgbm.txt"))
+        out = test[["zone", "ts", "date", "slot", "y", "lam", "is_fest", "phase"]].copy()
+        out["seasonal_naive_7d"] = preds["seasonal_naive_7d"]
+        out["lightgbm"] = preds["lightgbm"]
+        out.to_parquet(REPORT_DIR / "test_predictions.parquet", index=False)
+        (REPORT_DIR / "forecast_report.json").write_text(json.dumps(report, indent=2))
+        (REPORT_DIR / "forecast_report.md").write_text(to_markdown(report), encoding="utf-8")
+        _plot(test, preds, REPORT_DIR / "forecast_example.png")
+    return report
+
+
+def to_markdown(r: dict) -> str:
+    lines = [
+        "# Demand forecasting report", "",
+        f"> {r['data']}", "",
+        f"**Task:** {r['task']}  ",
+        f"**Split:** train {r['split']['train']} · validation {r['split']['validation']} · test {r['split']['test']} "
+        f"({r['split']['n_test_days']} days, {r['split']['n_test_slots']:,} zone-slots)  ",
+        f"**Protocol:** {r['protocol']}", "",
+        "| Model | MAE | RMSE | WAPE |", "|---|---|---|---|",
+    ]
+    for k, v in r["results"].items():
+        lines.append(f"| {k} | {v['mae']:.3f} | {v['rmse']:.3f} | {v['wape']:.1%} |")
+    c = r["lightgbm_vs_seasonal_naive"]
+    lines += [
+        "", f"**LightGBM vs seasonal-naive:** MAE reduced by **{c['mae_reduction']:.1%}** "
+        f"(95% day-block bootstrap CI {c['ci95'][0]:.1%} to {c['ci95'][1]:.1%}).  ",
+        f"Oracle ceiling (predicting the true generating rate): {c['oracle_ceiling_reduction']:.1%}, so LightGBM captures "
+        f"{c['share_of_achievable_gain']:.0%} of the achievable gain.  ",
+        f"**LightGBM vs the strongest baseline (4-week same-weekday mean):** MAE reduced by "
+        f"**{r['lightgbm_vs_best_baseline_mean_4w']['mae_reduction']:.1%}** (95% CI "
+        f"{r['lightgbm_vs_best_baseline_mean_4w']['ci95'][0]:.1%} to {r['lightgbm_vs_best_baseline_mean_4w']['ci95'][1]:.1%}).", "",
+        "## By regime", "", "| Regime | Slots | Seasonal-naive MAE | LightGBM MAE | Improvement |", "|---|---|---|---|---|",
+    ]
+    for k, v in r["by_regime"].items():
+        lines.append(f"| {k} | {v['n_slots']:,} | {v['seasonal_naive_mae']:.3f} | {v['lightgbm_mae']:.3f} | {v['improvement']:.1%} |")
+    lines += ["", "## Ablation (test MAE, drop one feature group)", "", "| Variant | MAE |", "|---|---|"]
+    for k, v in r["ablation_mae"].items():
+        lines.append(f"| {k} | {v:.4f} |")
+    lines += ["", "## Top features (gain)", ""]
+    for f, v in list(r["feature_importance_gain"].items())[:8]:
+        lines.append(f"- `{f}`: {v:,.0f}")
+    return "\n".join(lines) + "\n"
+
+
+def _plot(test: pd.DataFrame, preds: dict, path: Path) -> None:
+    import matplotlib
+
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+
+    fest_day = test.loc[test.is_fest == 1, "date"].min()
+    start = fest_day - pd.Timedelta(days=3) if pd.notna(fest_day) else test.date.min()
+    m = ((test.zone == "activity") & (test.date >= start) & (test.date < start + pd.Timedelta(days=7))).to_numpy()
+    ts = test.loc[m, "ts"]
+    fig, ax = plt.subplots(figsize=(12, 4))
+    ax.plot(ts, test.loc[m, "y"], lw=1, color="#999", label="actual")
+    ax.plot(ts, preds["seasonal_naive_7d"][m], lw=1.2, label="seasonal naive (t-7d)")
+    ax.plot(ts, preds["lightgbm"][m], lw=1.6, label="LightGBM")
+    ax.set_title("SAC/sports zone, week around a campus fest (synthetic data)")
+    ax.set_ylabel("ride requests / 30 min")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(path, dpi=120)
+
+
+if __name__ == "__main__":
+    sys.stdout.reconfigure(encoding="utf-8")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--seed", type=int, default=7)
+    args = ap.parse_args()
+    rep = run(seed=args.seed)
+    print(to_markdown(rep))

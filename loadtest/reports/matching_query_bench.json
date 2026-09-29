@@ -1,0 +1,179 @@
+{
+  "results": [
+    {
+      "scenario": "campus",
+      "drivers": 1000,
+      "avg_available_in_radius": 394.2,
+      "knn_partial_gist": {
+        "p50_ms": 0.868,
+        "p95_ms": 1.036,
+        "mean_ms": 0.882,
+        "matched": 1.0
+      },
+      "radius_sort_gist": {
+        "p50_ms": 2.088,
+        "p95_ms": 2.495,
+        "mean_ms": 2.115,
+        "matched": 1.0
+      },
+      "app_side_scan": {
+        "p50_ms": 2.54,
+        "p95_ms": 2.858,
+        "mean_ms": 2.553,
+        "matched": 1.0
+      },
+      "knn_no_index": {
+        "p50_ms": 2.385,
+        "p95_ms": 2.808,
+        "mean_ms": 2.435,
+        "matched": 1.0
+      }
+    },
+    {
+      "scenario": "campus",
+      "drivers": 10000,
+      "avg_available_in_radius": 3991.8,
+      "knn_partial_gist": {
+        "p50_ms": 0.916,
+        "p95_ms": 1.193,
+        "mean_ms": 0.945,
+        "matched": 1.0
+      },
+      "radius_sort_gist": {
+        "p50_ms": 15.393,
+        "p95_ms": 17.489,
+        "mean_ms": 14.994,
+        "matched": 1.0
+      },
+      "app_side_scan": {
+        "p50_ms": 9.245,
+        "p95_ms": 19.665,
+        "mean_ms": 10.046,
+        "matched": 1.0
+      },
+      "knn_no_index": {
+        "p50_ms": 34.393,
+        "p95_ms": 37.983,
+        "mean_ms": 34.709,
+        "matched": 1.0
+      }
+    },
+    {
+      "scenario": "campus",
+      "drivers": 100000,
+      "avg_available_in_radius": 39177.6,
+      "knn_partial_gist": {
+        "p50_ms": 0.984,
+        "p95_ms": 1.191,
+        "mean_ms": 0.997,
+        "matched": 1.0
+      },
+      "radius_sort_gist": {
+        "p50_ms": 144.81,
+        "p95_ms": 165.344,
+        "mean_ms": 142.342,
+        "matched": 1.0
+      },
+      "app_side_scan": {
+        "p50_ms": 89.496,
+        "p95_ms": 103.3,
+        "mean_ms": 90.419,
+        "matched": 1.0
+      },
+      "knn_no_index": {
+        "p50_ms": 410.691,
+        "p95_ms": 453.139,
+        "mean_ms": 414.852,
+        "matched": 1.0
+      }
+    },
+    {
+      "scenario": "city",
+      "drivers": 1000,
+      "avg_available_in_radius": 8.3,
+      "knn_partial_gist": {
+        "p50_ms": 1.213,
+        "p95_ms": 1.438,
+        "mean_ms": 1.238,
+        "matched": 1.0
+      },
+      "radius_sort_gist": {
+        "p50_ms": 0.765,
+        "p95_ms": 0.931,
+        "mean_ms": 0.774,
+        "matched": 1.0
+      },
+      "app_side_scan": {
+        "p50_ms": 2.505,
+        "p95_ms": 2.79,
+        "mean_ms": 2.521,
+        "matched": 1.0
+      },
+      "knn_no_index": {
+        "p50_ms": 2.217,
+        "p95_ms": 2.626,
+        "mean_ms": 2.267,
+        "matched": 1.0
+      }
+    },
+    {
+      "scenario": "city",
+      "drivers": 10000,
+      "avg_available_in_radius": 98.5,
+      "knn_partial_gist": {
+        "p50_ms": 1.776,
+        "p95_ms": 2.127,
+        "mean_ms": 1.812,
+        "matched": 1.0
+      },
+      "radius_sort_gist": {
+        "p50_ms": 1.168,
+        "p95_ms": 1.381,
+        "mean_ms": 1.189,
+        "matched": 1.0
+      },
+      "app_side_scan": {
+        "p50_ms": 9.078,
+        "p95_ms": 18.691,
+        "mean_ms": 9.831,
+        "matched": 1.0
+      },
+      "knn_no_index": {
+        "p50_ms": 36.154,
+        "p95_ms": 40.539,
+        "mean_ms": 36.706,
+        "matched": 1.0
+      }
+    },
+    {
+      "scenario": "city",
+      "drivers": 100000,
+      "avg_available_in_radius": 1072.2,
+      "knn_partial_gist": {
+        "p50_ms": 1.037,
+        "p95_ms": 1.219,
+        "mean_ms": 1.053,
+        "matched": 1.0
+      },
+      "radius_sort_gist": {
+        "p50_ms": 6.127,
+        "p95_ms": 6.801,
+        "mean_ms": 6.158,
+        "matched": 1.0
+      },
+      "app_side_scan": {
+        "p50_ms": 90.699,
+        "p95_ms": 100.25,
+        "mean_ms": 91.453,
+        "matched": 1.0
+      },
+      "knn_no_index": {
+        "p50_ms": 422.512,
+        "p95_ms": 458.082,
+        "mean_ms": 426.399,
+        "matched": 1.0
+      }
+    }
+  ],
+  "plan": "CTE Scan on assigned a (actual time=3.678..3.684 rows=1 loops=1)\n  Buffers: shared hit=1049\n  CTE ride\n    ->  LockRows (actual time=0.012..0.014 rows=1 loops=1)\n          Buffers: shared hit=5\n          ->  Index Scan using rides_pkey on rides (actual time=0.003..0.005 rows=1 loops=1)\n                Index Cond: (id = '1'::bigint)\n                Filter: (status = ANY ('{searching,scheduled}'::text[]))\n                Buffers: shared hit=3\n  CTE best\n    ->  Limit (actual time=3.531..3.533 rows=1 loops=1)\n          Buffers: shared hit=1023\n          ->  LockRows (actual time=3.531..3.533 rows=1 loops=1)\n                Buffers: shared hit=1023\n                ->  Result (actual time=3.528..3.530 rows=1 loops=1)\n                      Buffers: shared hit=1022\n                      ->  Sort (actual time=3.525..3.527 rows=1 loops=1)\n                            Sort Key: ((st_distance(d.location, '0101000020E61000006FF085C954795340228E75711BDD3D40'::geography, true) + (('150'::smallint * (d.capacity - '1'::smallint)))::double precision))\n                            Sort Method: quicksort  Memory: 27kB\n                            Buffers: shared hit=1022\n                            ->  Nested Loop (actual time=3.432..3.517 rows=16 loops=1)\n                                  Buffers: shared hit=1022\n                                  ->  CTE Scan on ride (actual time=0.016..0.018 rows=1 loops=1)\n                                        Buffers: shared hit=5\n                                  ->  Nested Loop (actual time=3.409..3.469 rows=16 loops=1)\n                                        Buffers: shared hit=1017\n                                        ->  Subquery Scan on knn (actual time=3.371..3.378 rows=16 loops=1)\n                                              Buffers: shared hit=969\n                                              ->  Limit (actual time=3.368..3.371 rows=16 loops=1)\n                                                    Buffers: shared hit=969\n                                                    ->  Sort (actual time=3.368..3.369 rows=16 loops=1)\n                                                          Sort Key: ((drivers.location <-> '0101000020E61000006FF085C954795340228E75711BDD3D40'::geography))\n                                                          Sort Method: top-N heapsort  Memory: 26kB\n                                                          Buffers: shared hit=969\n                                                          ->  Bitmap Heap Scan on drivers (actual time=0.447..3.252 rows=1068 loops=1)\n                                                                Recheck Cond: (status = 'available'::text)\n                                                                Filter: ((capacity >= '1'::smallint) AND (last_seen > (now() - '2777:46:40'::interval)) AND st_dwithin(location, '0101000020E61000006FF085C954795340228E75711BDD3D40'::geography, '1500'::double precision, true))\n                                                                Rows Removed by Filter: 567\n                                                                Heap Blocks: exact=937\n                                                                Buffers: shared hit=969\n                                                                ->  Bitmap Index Scan on drivers_available_location_gix (actual time=0.345..0.345 rows=1635 loops=1)\n                                                                      Index Cond: (location && _st_expand('0101000020E61000006FF085C954795340228E75711BDD3D40'::geography, '1500'::double precision))\n                                                                      Buffers: shared hit=32\n                                        ->  Index Scan using drivers_pkey on drivers d (actual time=0.005..0.005 rows=1 loops=16)\n                                              Index Cond: (id = knn.id)\n                                              Filter: (status = 'available'::text)\n                                              Buffers: shared hit=48\n  CTE claimed\n    ->  Update on drivers d_1 (actual time=3.611..3.612 rows=1 loops=1)\n          Buffers: shared hit=1034\n          ->  Nested Loop (actual time=3.550..3.551 rows=1 loops=1)\n                Buffers: shared hit=1026\n                ->  CTE Scan on best (actual time=3.534..3.534 rows=1 loops=1)\n                      Buffers: shared hit=1023\n                ->  Index Scan using drivers_pkey on drivers d_1 (actual time=0.015..0.015 rows=1 loops=1)\n                      Index Cond: (id = best.id)\n                      Filter: (status = 'available'::text)\n                      Buffers: shared hit=3\n  CTE assigned\n    ->  Update on rides r (actual time=3.676..3.678 rows=1 loops=1)\n          Buffers: shared hit=1049\n          ->  Nested Loop (actual time=3.626..3.628 rows=1 loops=1)\n                Buffers: shared hit=1037\n                ->  Index Scan using rides_pkey on rides r (actual time=0.010..0.011 rows=1 loops=1)\n                      Index Cond: (id = '1'::bigint)\n                      Buffers: shared hit=3\n                ->  CTE Scan on claimed (actual time=3.614..3.615 rows=1 loops=1)\n                      Buffers: shared hit=1034\nPlanning:\n  Buffers: shared hit=25\nPlanning Time: 1.449 ms\nTrigger for constraint rides_driver_id_fkey on rides: time=0.027 calls=1\nExecution Time: 3.882 ms"
+}

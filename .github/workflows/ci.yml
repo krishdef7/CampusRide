@@ -1,0 +1,28 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgis:
+        image: postgis/postgis:16-3.4
+        env:
+          POSTGRES_USER: campusride
+          POSTGRES_PASSWORD: campusride
+          POSTGRES_DB: campusride
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U campusride" --health-interval 2s --health-retries 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.12", cache: pip}
+      - run: pip install -e ".[dev]"
+      - run: ruff check .
+      - run: pytest -q
+      # Regression gate on the non-LLM path: the dataset must rebuild identically
+      # and the rule baseline must not silently regress.
+      - run: python evals/build_dataset.py && git diff --exit-code evals/data
+      - run: python evals/run_agent_eval.py --split test --baseline
+      - run: python evals/check_regression.py evals/reports/agent_eval_baseline_test.json --min-exact 0.85

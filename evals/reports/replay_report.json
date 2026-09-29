@@ -1,0 +1,158 @@
+[
+  {
+    "data": "SYNTHETIC test-period requests; simulated fleet",
+    "fleet": 20,
+    "days": 21,
+    "policies": {
+      "none": {
+        "requests": 15205,
+        "mean_wait_min": 2.48,
+        "p90_wait_min": 4.79,
+        "served_within_5min": 0.9127,
+        "abandon_rate": 0.0007,
+        "deadhead_km_per_day": 0.0,
+        "mean_wait_reduction_vs_none": 0.0
+      },
+      "static_share": {
+        "requests": 15205,
+        "mean_wait_min": 1.95,
+        "p90_wait_min": 3.99,
+        "served_within_5min": 0.9456,
+        "abandon_rate": 0.0006,
+        "deadhead_km_per_day": 171.6,
+        "mean_wait_reduction_vs_none": 0.2137
+      },
+      "seasonal_naive": {
+        "requests": 15205,
+        "mean_wait_min": 2.0,
+        "p90_wait_min": 4.01,
+        "served_within_5min": 0.9414,
+        "abandon_rate": 0.0004,
+        "deadhead_km_per_day": 399.7,
+        "mean_wait_reduction_vs_none": 0.1935
+      },
+      "lightgbm": {
+        "requests": 15205,
+        "mean_wait_min": 1.78,
+        "p90_wait_min": 3.8,
+        "served_within_5min": 0.9502,
+        "abandon_rate": 0.0005,
+        "deadhead_km_per_day": 226.8,
+        "mean_wait_reduction_vs_none": 0.2823
+      },
+      "oracle": {
+        "requests": 15205,
+        "mean_wait_min": 1.59,
+        "p90_wait_min": 3.56,
+        "served_within_5min": 0.9545,
+        "abandon_rate": 0.0007,
+        "deadhead_km_per_day": 383.4,
+        "mean_wait_reduction_vs_none": 0.3589
+      }
+    }
+  },
+  {
+    "data": "SYNTHETIC test-period requests; simulated fleet",
+    "fleet": 25,
+    "days": 21,
+    "policies": {
+      "none": {
+        "requests": 15205,
+        "mean_wait_min": 2.01,
+        "p90_wait_min": 4.06,
+        "served_within_5min": 0.9507,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 0.0,
+        "mean_wait_reduction_vs_none": 0.0
+      },
+      "static_share": {
+        "requests": 15205,
+        "mean_wait_min": 1.41,
+        "p90_wait_min": 3.36,
+        "served_within_5min": 0.9787,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 197.8,
+        "mean_wait_reduction_vs_none": 0.2985
+      },
+      "seasonal_naive": {
+        "requests": 15205,
+        "mean_wait_min": 1.49,
+        "p90_wait_min": 3.42,
+        "served_within_5min": 0.9732,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 507.2,
+        "mean_wait_reduction_vs_none": 0.2587
+      },
+      "lightgbm": {
+        "requests": 15205,
+        "mean_wait_min": 1.24,
+        "p90_wait_min": 3.04,
+        "served_within_5min": 0.982,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 269.3,
+        "mean_wait_reduction_vs_none": 0.3831
+      },
+      "oracle": {
+        "requests": 15205,
+        "mean_wait_min": 1.08,
+        "p90_wait_min": 2.74,
+        "served_within_5min": 0.9829,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 480.8,
+        "mean_wait_reduction_vs_none": 0.4627
+      }
+    }
+  },
+  {
+    "data": "SYNTHETIC test-period requests; simulated fleet",
+    "fleet": 30,
+    "days": 21,
+    "policies": {
+      "none": {
+        "requests": 15205,
+        "mean_wait_min": 1.78,
+        "p90_wait_min": 3.82,
+        "served_within_5min": 0.9711,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 0.0,
+        "mean_wait_reduction_vs_none": 0.0
+      },
+      "static_share": {
+        "requests": 15205,
+        "mean_wait_min": 1.18,
+        "p90_wait_min": 2.94,
+        "served_within_5min": 0.9913,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 213.1,
+        "mean_wait_reduction_vs_none": 0.3371
+      },
+      "seasonal_naive": {
+        "requests": 15205,
+        "mean_wait_min": 1.29,
+        "p90_wait_min": 3.07,
+        "served_within_5min": 0.9857,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 612.5,
+        "mean_wait_reduction_vs_none": 0.2753
+      },
+      "lightgbm": {
+        "requests": 15205,
+        "mean_wait_min": 1.02,
+        "p90_wait_min": 2.61,
+        "served_within_5min": 0.9936,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 309.5,
+        "mean_wait_reduction_vs_none": 0.427
+      },
+      "oracle": {
+        "requests": 15205,
+        "mean_wait_min": 0.86,
+        "p90_wait_min": 2.17,
+        "served_within_5min": 0.9953,
+        "abandon_rate": 0.0,
+        "deadhead_km_per_day": 576.6,
+        "mean_wait_reduction_vs_none": 0.5169
+      }
+    }
+  }
+]

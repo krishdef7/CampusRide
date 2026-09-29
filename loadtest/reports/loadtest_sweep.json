@@ -1,0 +1,289 @@
+{
+  "run_at": "2026-09-29T08:07:15",
+  "data": "SIMULATED requests and drivers",
+  "env": {
+    "where": "API, Postgres and load generator in Docker (Linux containers, Docker Desktop / WSL2)",
+    "host_cpu": "AMD Ryzen (Family 25 Model 80)",
+    "cores": 16,
+    "python": "3.12.14"
+  },
+  "config": {
+    "drivers": 1000,
+    "riders": 2000,
+    "api": "uvicorn x4 workers, uvloop + httptools, asyncpg pool 20/worker",
+    "client_processes": 4,
+    "location_updates_per_s": 200
+  },
+  "runs": [
+    {
+      "target_rate_rps": 100.0,
+      "requests": 3000,
+      "client_processes": 4,
+      "wall_s": 32.36,
+      "achieved_throughput_rps": 101.6,
+      "success_rate": 1.0,
+      "errors": {},
+      "matched_rate": 1.0,
+      "latency_ms": {
+        "p50": 9.7,
+        "p90": 12.8,
+        "p95": 14.3,
+        "p99": 25.3,
+        "max": 184.1,
+        "mean": 10.2
+      },
+      "client_schedule_lag_ms_p99": 1.4,
+      "ws_fanout_ms": {
+        "events": 9000,
+        "p50": 6.0,
+        "p95": 7.2
+      },
+      "server_match_histogram": {
+        "count": 3000,
+        "p50_le_ms": 10.0,
+        "p95_le_ms": 25.0,
+        "p99_le_ms": 25.0
+      },
+      "invariants": {
+        "drivers_with_multiple_active_rides": 0,
+        "capacity_violations": 0,
+        "vehicle_type_violations": 0,
+        "driver_ride_state_mismatches": 0,
+        "non_linear_driver_histories": 0,
+        "claims_without_prior_release": 0,
+        "claims_audited": 3000,
+        "transitions_audited": 9000,
+        "wallclock_stamp_inversions_info": 1,
+        "rides_total": 3000,
+        "rides_assigned_ever": 3000,
+        "rides_completed": 3000,
+        "pg_version": "PostgreSQL 16.4 (Debian 16.4-1.pgdg110+2) on x86_64-pc-linux-gnu"
+      }
+    },
+    {
+      "target_rate_rps": 200.0,
+      "requests": 3000,
+      "client_processes": 4,
+      "wall_s": 19.31,
+      "achieved_throughput_rps": 192.7,
+      "success_rate": 1.0,
+      "errors": {},
+      "matched_rate": 1.0,
+      "latency_ms": {
+        "p50": 10.4,
+        "p90": 13.3,
+        "p95": 14.5,
+        "p99": 18.4,
+        "max": 49.9,
+        "mean": 10.7
+      },
+      "client_schedule_lag_ms_p99": 1.5,
+      "ws_fanout_ms": {
+        "events": 9000,
+        "p50": 5.8,
+        "p95": 14.0
+      },
+      "server_match_histogram": {
+        "count": 3000,
+        "p50_le_ms": 10.0,
+        "p95_le_ms": 25.0,
+        "p99_le_ms": 25.0
+      },
+      "invariants": {
+        "drivers_with_multiple_active_rides": 0,
+        "capacity_violations": 0,
+        "vehicle_type_violations": 0,
+        "driver_ride_state_mismatches": 0,
+        "non_linear_driver_histories": 0,
+        "claims_without_prior_release": 0,
+        "claims_audited": 3000,
+        "transitions_audited": 9000,
+        "wallclock_stamp_inversions_info": 4,
+        "rides_total": 3000,
+        "rides_assigned_ever": 3000,
+        "rides_completed": 3000,
+        "pg_version": "PostgreSQL 16.4 (Debian 16.4-1.pgdg110+2) on x86_64-pc-linux-gnu"
+      }
+    },
+    {
+      "target_rate_rps": 300.0,
+      "requests": 3000,
+      "client_processes": 4,
+      "wall_s": 13.06,
+      "achieved_throughput_rps": 295.9,
+      "success_rate": 1.0,
+      "errors": {},
+      "matched_rate": 1.0,
+      "latency_ms": {
+        "p50": 11.0,
+        "p90": 14.8,
+        "p95": 16.2,
+        "p99": 20.6,
+        "max": 35.7,
+        "mean": 11.2
+      },
+      "client_schedule_lag_ms_p99": 1.5,
+      "ws_fanout_ms": {
+        "events": 9000,
+        "p50": 5.5,
+        "p95": 8.1
+      },
+      "server_match_histogram": {
+        "count": 3000,
+        "p50_le_ms": 10.0,
+        "p95_le_ms": 25.0,
+        "p99_le_ms": 25.0
+      },
+      "invariants": {
+        "drivers_with_multiple_active_rides": 0,
+        "capacity_violations": 0,
+        "vehicle_type_violations": 0,
+        "driver_ride_state_mismatches": 0,
+        "non_linear_driver_histories": 0,
+        "claims_without_prior_release": 0,
+        "claims_audited": 3000,
+        "transitions_audited": 9000,
+        "wallclock_stamp_inversions_info": 9,
+        "rides_total": 3000,
+        "rides_assigned_ever": 3000,
+        "rides_completed": 3000,
+        "pg_version": "PostgreSQL 16.4 (Debian 16.4-1.pgdg110+2) on x86_64-pc-linux-gnu"
+      }
+    },
+    {
+      "target_rate_rps": 400.0,
+      "requests": 3000,
+      "client_processes": 4,
+      "wall_s": 10.55,
+      "achieved_throughput_rps": 387.5,
+      "success_rate": 1.0,
+      "errors": {},
+      "matched_rate": 1.0,
+      "latency_ms": {
+        "p50": 11.9,
+        "p90": 16.6,
+        "p95": 19.1,
+        "p99": 26.9,
+        "max": 61.7,
+        "mean": 12.7
+      },
+      "client_schedule_lag_ms_p99": 1.6,
+      "ws_fanout_ms": {
+        "events": 9000,
+        "p50": 5.7,
+        "p95": 9.4
+      },
+      "server_match_histogram": {
+        "count": 3000,
+        "p50_le_ms": 10.0,
+        "p95_le_ms": 25.0,
+        "p99_le_ms": 25.0
+      },
+      "invariants": {
+        "drivers_with_multiple_active_rides": 0,
+        "capacity_violations": 0,
+        "vehicle_type_violations": 0,
+        "driver_ride_state_mismatches": 0,
+        "non_linear_driver_histories": 0,
+        "claims_without_prior_release": 0,
+        "claims_audited": 3000,
+        "transitions_audited": 9000,
+        "wallclock_stamp_inversions_info": 0,
+        "rides_total": 3000,
+        "rides_assigned_ever": 3000,
+        "rides_completed": 3000,
+        "pg_version": "PostgreSQL 16.4 (Debian 16.4-1.pgdg110+2) on x86_64-pc-linux-gnu"
+      }
+    },
+    {
+      "target_rate_rps": 500.0,
+      "requests": 3000,
+      "client_processes": 4,
+      "wall_s": 9.45,
+      "achieved_throughput_rps": 462.2,
+      "success_rate": 1.0,
+      "errors": {},
+      "matched_rate": 0.9903,
+      "latency_ms": {
+        "p50": 13.5,
+        "p90": 21.3,
+        "p95": 26.2,
+        "p99": 39.3,
+        "max": 76.6,
+        "mean": 14.9
+      },
+      "client_schedule_lag_ms_p99": 1.7,
+      "ws_fanout_ms": {
+        "events": 8942,
+        "p50": 6.3,
+        "p95": 13.6
+      },
+      "server_match_histogram": {
+        "count": 3000,
+        "p50_le_ms": 10.0,
+        "p95_le_ms": 25.0,
+        "p99_le_ms": 25.0
+      },
+      "invariants": {
+        "drivers_with_multiple_active_rides": 0,
+        "capacity_violations": 0,
+        "vehicle_type_violations": 0,
+        "driver_ride_state_mismatches": 0,
+        "non_linear_driver_histories": 0,
+        "claims_without_prior_release": 0,
+        "claims_audited": 3000,
+        "transitions_audited": 8942,
+        "wallclock_stamp_inversions_info": 0,
+        "rides_total": 3000,
+        "rides_assigned_ever": 3000,
+        "rides_completed": 2971,
+        "pg_version": "PostgreSQL 16.4 (Debian 16.4-1.pgdg110+2) on x86_64-pc-linux-gnu"
+      }
+    },
+    {
+      "target_rate_rps": 600.0,
+      "requests": 3000,
+      "client_processes": 4,
+      "wall_s": 8.15,
+      "achieved_throughput_rps": 586.5,
+      "success_rate": 1.0,
+      "errors": {},
+      "matched_rate": 0.83,
+      "latency_ms": {
+        "p50": 22.0,
+        "p90": 55.0,
+        "p95": 64.4,
+        "p99": 77.9,
+        "max": 111.5,
+        "mean": 27.4
+      },
+      "client_schedule_lag_ms_p99": 2.2,
+      "ws_fanout_ms": {
+        "events": 7980,
+        "p50": 7.2,
+        "p95": 34.3
+      },
+      "server_match_histogram": {
+        "count": 3000,
+        "p50_le_ms": 25.0,
+        "p95_le_ms": 25.0,
+        "p99_le_ms": 25.0
+      },
+      "invariants": {
+        "drivers_with_multiple_active_rides": 0,
+        "capacity_violations": 0,
+        "vehicle_type_violations": 0,
+        "driver_ride_state_mismatches": 0,
+        "non_linear_driver_histories": 0,
+        "claims_without_prior_release": 0,
+        "claims_audited": 3000,
+        "transitions_audited": 7980,
+        "wallclock_stamp_inversions_info": 0,
+        "rides_total": 3000,
+        "rides_assigned_ever": 3000,
+        "rides_completed": 2490,
+        "pg_version": "PostgreSQL 16.4 (Debian 16.4-1.pgdg110+2) on x86_64-pc-linux-gnu"
+      }
+    }
+  ]
+}
