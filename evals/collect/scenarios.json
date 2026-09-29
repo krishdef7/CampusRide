@@ -1,0 +1,664 @@
+[
+ {
+  "id": "S001",
+  "description": "You are at Cautley Bhawan and want to go to IITR Hospital, alone, as soon as possible. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cautley",
+   "dropoff": "hospital",
+   "passengers": 1,
+   "vehicle_type": "auto",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S002",
+  "description": "You are at Roorkee Railway Station and want to go to Rajendra Bhawan, alone, tomorrow at 7:00 AM. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "railway_station",
+   "dropoff": "rajendra",
+   "passengers": 1,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "2026-10-06T07:00"
+  }
+ },
+ {
+  "id": "S003",
+  "description": "You are at IITR Hospital and want to go to Rajiv Bhawan, with two friends, as soon as possible. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "hospital",
+   "dropoff": "rajiv",
+   "passengers": 3,
+   "vehicle_type": null,
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S004",
+  "description": "You are at Kasturba Bhawan and thinking of going to Lecture Hall Complex, with one friend. Any vehicle is fine. You are NOT booking yet: ask how much it would cost or how long the pickup would take.",
+  "expected": {
+   "action": "get_quote",
+   "pickup": "kasturba",
+   "dropoff": "lhc",
+   "passengers": 2,
+   "vehicle_type": null
+  }
+ },
+ {
+  "id": "S005",
+  "description": "You are at Cautley Bhawan and want to go to Multi Activity Centre, with two friends, in 20 minutes. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cautley",
+   "dropoff": "mac",
+   "passengers": 3,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T14:20"
+  }
+ },
+ {
+  "id": "S006",
+  "description": "You are at Main Building and want to go to Sarojini Bhawan, with two friends, as soon as possible. You specifically want a cab. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "main_building",
+   "dropoff": "sarojini",
+   "passengers": 3,
+   "vehicle_type": "cab",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S007",
+  "description": "You are at Computer Science Department and want to go to Rajiv Bhawan, alone, as soon as possible. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cse_dept",
+   "dropoff": "rajiv",
+   "passengers": 1,
+   "vehicle_type": "auto",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S008",
+  "description": "You are at Rajiv Bhawan and want to go to IITR Hospital, with one friend, tomorrow at 9:00 AM. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "rajiv",
+   "dropoff": "hospital",
+   "passengers": 2,
+   "vehicle_type": "auto",
+   "pickup_at": "2026-10-06T09:00"
+  }
+ },
+ {
+  "id": "S009",
+  "description": "You are at Cautley Bhawan and want to go to Computer Science Department, alone, today at 9:30 PM. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cautley",
+   "dropoff": "cse_dept",
+   "passengers": 1,
+   "vehicle_type": "auto",
+   "pickup_at": "2026-10-05T21:30"
+  }
+ },
+ {
+  "id": "S010",
+  "description": "You are at Radhakrishnan Bhawan and want to go to Computer Science Department, with two friends, as soon as possible. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "radhakrishnan",
+   "dropoff": "cse_dept",
+   "passengers": 3,
+   "vehicle_type": null,
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S011",
+  "description": "You are at Cautley Bhawan and want to go to Convocation Hall, with one friend, as soon as possible. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cautley",
+   "dropoff": "convocation_hall",
+   "passengers": 2,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S012",
+  "description": "You and 9 friends (all 10 of you) want one vehicle from Govind Bhawan to Convocation Hall. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "capacity"
+  }
+ },
+ {
+  "id": "S013",
+  "description": "You are at Ganga Bhawan and want to go to Roorkee Bus Stand, alone, today at 8:00 PM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "ganga",
+   "dropoff": "bus_stand",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T20:00"
+  }
+ },
+ {
+  "id": "S014",
+  "description": "You are at Govind Bhawan and thinking of going to Lecture Hall Complex, alone. You specifically want a cab. You are NOT booking yet: ask how much it would cost or how long the pickup would take.",
+  "expected": {
+   "action": "get_quote",
+   "pickup": "govind",
+   "dropoff": "lhc",
+   "passengers": 1,
+   "vehicle_type": "cab"
+  }
+ },
+ {
+  "id": "S015",
+  "description": "You booked a ride earlier. Your booking number is 40014. Your plans changed: ask the bot to cancel it.",
+  "needs_ride": true,
+  "ride_id": 40014,
+  "expected": {
+   "action": "cancel_ride",
+   "ride_id": 40014
+  }
+ },
+ {
+  "id": "S016",
+  "description": "You are at Roorkee Bus Stand and want to go to Cautley Bhawan, alone, today at 6:00 PM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "bus_stand",
+   "dropoff": "cautley",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T18:00"
+  }
+ },
+ {
+  "id": "S017",
+  "description": "You booked a ride earlier. Your booking number is 40016. Ask the bot where your ride is.",
+  "needs_ride": true,
+  "ride_id": 40016,
+  "expected": {
+   "action": "get_ride_status",
+   "ride_id": 40016
+  }
+ },
+ {
+  "id": "S018",
+  "description": "You are at Ravindra Bhawan and want to go to Main Building, with two friends, tomorrow at 9:00 AM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "ravindra",
+   "dropoff": "main_building",
+   "passengers": 3,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-06T09:00"
+  }
+ },
+ {
+  "id": "S019",
+  "description": "You are at Student Activity Centre and thinking of going to Azad Bhawan, alone. Any vehicle is fine. You are NOT booking yet: ask how much it would cost or how long the pickup would take.",
+  "expected": {
+   "action": "get_quote",
+   "pickup": "sac",
+   "dropoff": "azad",
+   "passengers": 1,
+   "vehicle_type": null
+  }
+ },
+ {
+  "id": "S020",
+  "description": "You are at Rajendra Bhawan and thinking of going to Main Gate, alone. Any vehicle is fine. You are NOT booking yet: ask how much it would cost or how long the pickup would take.",
+  "expected": {
+   "action": "get_quote",
+   "pickup": "rajendra",
+   "dropoff": "main_gate",
+   "passengers": 1,
+   "vehicle_type": null
+  }
+ },
+ {
+  "id": "S021",
+  "description": "You are at Rajiv Bhawan and want to go to Sports Complex, alone, in 45 minutes. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "rajiv",
+   "dropoff": "sports_complex",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T14:45"
+  }
+ },
+ {
+  "id": "S022",
+  "description": "You are at Himalaya Bhawan and thinking of going to Lecture Hall Complex, with three friends. You specifically want a cab. You are NOT booking yet: ask how much it would cost or how long the pickup would take.",
+  "expected": {
+   "action": "get_quote",
+   "pickup": "himalaya",
+   "dropoff": "lhc",
+   "passengers": 4,
+   "vehicle_type": "cab"
+  }
+ },
+ {
+  "id": "S023",
+  "description": "You are at Govind Bhawan and want to go to Main Gate, alone, as soon as possible. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "govind",
+   "dropoff": "main_gate",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S024",
+  "description": "You and 6 friends (all 7 of you) want one vehicle from Main Building to Ganga Bhawan. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "capacity"
+  }
+ },
+ {
+  "id": "S025",
+  "description": "You are at Roorkee Railway Station and want to go to Cautley Bhawan, alone, as soon as possible. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "railway_station",
+   "dropoff": "cautley",
+   "passengers": 1,
+   "vehicle_type": "auto",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S026",
+  "description": "You are at Jawahar Bhawan and want to go to Roorkee Bus Stand, with three friends, today at 9:30 PM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "jawahar",
+   "dropoff": "bus_stand",
+   "passengers": 4,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T21:30"
+  }
+ },
+ {
+  "id": "S027",
+  "description": "You are at Govind Bhawan and want to go to Mahatma Gandhi Central Library, with one friend, tomorrow at 9:00 AM. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "govind",
+   "dropoff": "mgcl",
+   "passengers": 2,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "2026-10-06T09:00"
+  }
+ },
+ {
+  "id": "S028",
+  "description": "You are at Govind Bhawan and want to go to Computer Science Department, alone, as soon as possible. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "govind",
+   "dropoff": "cse_dept",
+   "passengers": 1,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S029",
+  "description": "You are at Jawahar Bhawan and want to go to Roorkee Railway Station, with three friends, as soon as possible. You specifically want a cab. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "jawahar",
+   "dropoff": "railway_station",
+   "passengers": 4,
+   "vehicle_type": "cab",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S030",
+  "description": "You booked a ride earlier. Ask the bot where your ride is.",
+  "needs_ride": true,
+  "ride_id": 40029,
+  "expected": {
+   "action": "get_ride_status",
+   "ride_id": null
+  }
+ },
+ {
+  "id": "S031",
+  "description": "You are at Convocation Hall and want a ride to Rishikesh. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "out_of_area"
+  }
+ },
+ {
+  "id": "S032",
+  "description": "You are at Kasturba Bhawan and thinking of going to Convocation Hall, alone. Any vehicle is fine. You are NOT booking yet: ask how much it would cost or how long the pickup would take.",
+  "expected": {
+   "action": "get_quote",
+   "pickup": "kasturba",
+   "dropoff": "convocation_hall",
+   "passengers": 1,
+   "vehicle_type": null
+  }
+ },
+ {
+  "id": "S033",
+  "description": "You are at Ganga Bhawan and want to go to Sports Complex, alone, tomorrow at 9:00 AM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "ganga",
+   "dropoff": "sports_complex",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-06T09:00"
+  }
+ },
+ {
+  "id": "S034",
+  "description": "You are at Kasturba Bhawan and want to go to Sports Complex, with three friends, today at 5:30 PM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "kasturba",
+   "dropoff": "sports_complex",
+   "passengers": 4,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T17:30"
+  }
+ },
+ {
+  "id": "S035",
+  "description": "You are at Main Gate and want to go to Jawahar Bhawan, alone, in 45 minutes. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "main_gate",
+   "dropoff": "jawahar",
+   "passengers": 1,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "2026-10-05T14:45"
+  }
+ },
+ {
+  "id": "S036",
+  "description": "You booked a ride earlier. Your plans changed: ask the bot to cancel it.",
+  "needs_ride": true,
+  "ride_id": 40035,
+  "expected": {
+   "action": "cancel_ride",
+   "ride_id": null
+  }
+ },
+ {
+  "id": "S037",
+  "description": "You are at Azad Bhawan and want to go to Convocation Hall, alone, as soon as possible. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "azad",
+   "dropoff": "convocation_hall",
+   "passengers": 1,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S038",
+  "description": "You are at Sports Complex and want to go to Sarojini Bhawan, with three friends, tomorrow at 6:00 PM. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "sports_complex",
+   "dropoff": "sarojini",
+   "passengers": 4,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "2026-10-06T18:00"
+  }
+ },
+ {
+  "id": "S039",
+  "description": "You booked a ride earlier. Your booking number is 40038. Ask the bot where your ride is.",
+  "needs_ride": true,
+  "ride_id": 40038,
+  "expected": {
+   "action": "get_ride_status",
+   "ride_id": 40038
+  }
+ },
+ {
+  "id": "S040",
+  "description": "You are at Sarojini Bhawan and want a ride to Rishikesh. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "out_of_area"
+  }
+ },
+ {
+  "id": "S041",
+  "description": "You are at Main Building and want to go to Rajiv Bhawan, with three friends, as soon as possible. You specifically want a cab. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "main_building",
+   "dropoff": "rajiv",
+   "passengers": 4,
+   "vehicle_type": "cab",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S042",
+  "description": "You are at Cautley Bhawan and want to go to IITR Hospital, alone, as soon as possible. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cautley",
+   "dropoff": "hospital",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S043",
+  "description": "You are at Roorkee Railway Station and want to go to Ravindra Bhawan, with two friends, today at 9:30 PM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "railway_station",
+   "dropoff": "ravindra",
+   "passengers": 3,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T21:30"
+  }
+ },
+ {
+  "id": "S044",
+  "description": "You are at Cautley Bhawan and want to go to Lecture Hall Complex, alone, in 45 minutes. You specifically want an e-rickshaw. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cautley",
+   "dropoff": "lhc",
+   "passengers": 1,
+   "vehicle_type": "e_rickshaw",
+   "pickup_at": "2026-10-05T14:45"
+  }
+ },
+ {
+  "id": "S045",
+  "description": "You are at Rajiv Bhawan and want to go to Main Building, with two friends, as soon as possible. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "rajiv",
+   "dropoff": "main_building",
+   "passengers": 3,
+   "vehicle_type": "auto",
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S046",
+  "description": "You are at Roorkee Bus Stand and want a ride to Haridwar. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "out_of_area"
+  }
+ },
+ {
+  "id": "S047",
+  "description": "You are at Himalaya Bhawan and want to go to Mahatma Gandhi Central Library, alone, in 45 minutes. You specifically want a cab. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "himalaya",
+   "dropoff": "mgcl",
+   "passengers": 1,
+   "vehicle_type": "cab",
+   "pickup_at": "2026-10-05T14:45"
+  }
+ },
+ {
+  "id": "S048",
+  "description": "You are at Roorkee Railway Station and want to go to Govind Bhawan, alone, as soon as possible. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "railway_station",
+   "dropoff": "govind",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "asap"
+  }
+ },
+ {
+  "id": "S049",
+  "description": "You booked a ride earlier. Your booking number is 40048. Ask the bot where your ride is.",
+  "needs_ride": true,
+  "ride_id": 40048,
+  "expected": {
+   "action": "get_ride_status",
+   "ride_id": 40048
+  }
+ },
+ {
+  "id": "S050",
+  "description": "You and 9 friends (all 10 of you) want one vehicle from Roorkee Railway Station to Kasturba Bhawan. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "capacity"
+  }
+ },
+ {
+  "id": "S051",
+  "description": "You are at Ganga Bhawan and want to go to Roorkee Railway Station, with three friends, today at 9:30 PM. You specifically want a cab. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "ganga",
+   "dropoff": "railway_station",
+   "passengers": 4,
+   "vehicle_type": "cab",
+   "pickup_at": "2026-10-05T21:30"
+  }
+ },
+ {
+  "id": "S052",
+  "description": "You are at Main Gate and want a ride to Delhi airport. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "out_of_area"
+  }
+ },
+ {
+  "id": "S053",
+  "description": "You are at Sarojini Bhawan and want to go to Student Activity Centre, alone, today at 5:30 PM. You specifically want a cab. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "sarojini",
+   "dropoff": "sac",
+   "passengers": 1,
+   "vehicle_type": "cab",
+   "pickup_at": "2026-10-05T17:30"
+  }
+ },
+ {
+  "id": "S054",
+  "description": "You are at Cautley Bhawan and want a ride to Rishikesh. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "out_of_area"
+  }
+ },
+ {
+  "id": "S055",
+  "description": "You are at Ganga Bhawan and want a ride to Delhi airport. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "out_of_area"
+  }
+ },
+ {
+  "id": "S056",
+  "description": "You are at Student Activity Centre and want to go to Sarojini Bhawan, with one friend, tomorrow at 9:00 AM. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "sac",
+   "dropoff": "sarojini",
+   "passengers": 2,
+   "vehicle_type": "auto",
+   "pickup_at": "2026-10-06T09:00"
+  }
+ },
+ {
+  "id": "S057",
+  "description": "You are at Sports Complex and want to go to Radhakrishnan Bhawan, alone, today at 9:30 PM. Any vehicle is fine. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "sports_complex",
+   "dropoff": "radhakrishnan",
+   "passengers": 1,
+   "vehicle_type": null,
+   "pickup_at": "2026-10-05T21:30"
+  }
+ },
+ {
+  "id": "S058",
+  "description": "You are at Himalaya Bhawan and want to go to Lecture Hall Complex, with two friends, today at 9:30 PM. You specifically want an auto. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "himalaya",
+   "dropoff": "lhc",
+   "passengers": 3,
+   "vehicle_type": "auto",
+   "pickup_at": "2026-10-05T21:30"
+  }
+ },
+ {
+  "id": "S059",
+  "description": "You and 7 friends (all 8 of you) want one vehicle from Convocation Hall to Govind Bhawan. Ask the bot.",
+  "expected": {
+   "action": "decline",
+   "reason": "capacity"
+  }
+ },
+ {
+  "id": "S060",
+  "description": "You are at Cautley Bhawan and want to go to Multi Activity Centre, with one friend, today at 8:00 PM. You specifically want a cab. Ask the bot to book it.",
+  "expected": {
+   "action": "book_ride",
+   "pickup": "cautley",
+   "dropoff": "mac",
+   "passengers": 2,
+   "vehicle_type": "cab",
+   "pickup_at": "2026-10-05T20:00"
+  }
+ }
+]

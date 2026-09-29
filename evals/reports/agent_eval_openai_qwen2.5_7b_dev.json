@@ -1,0 +1,90 @@
+{
+  "system": "openai:qwen2.5:7b",
+  "split": "dev",
+  "n_cases": 8,
+  "intent_exact_match": 0.75,
+  "action_accuracy": 0.875,
+  "field_accuracy": {
+    "pickup": 0.875,
+    "dropoff": 0.75,
+    "pickup_at": 0.75,
+    "passengers": 0.875,
+    "vehicle_type": 0.875
+  },
+  "clarification": {
+    "precision": 0.0,
+    "recall": 0.0
+  },
+  "invalid_request_handling": {
+    "n": 0,
+    "declined": null,
+    "correct_reason": null
+  },
+  "by_category": {
+    "book": {
+      "n": 8,
+      "exact": 0.75
+    }
+  },
+  "by_expected_action": {
+    "book_ride": {
+      "n": 8,
+      "exact": 0.75
+    }
+  },
+  "by_tag": {
+    "abbrev": {
+      "n": 3,
+      "exact": 0.6667
+    },
+    "bare_hour": {
+      "n": 1,
+      "exact": 0.0
+    },
+    "hinglish": {
+      "n": 1,
+      "exact": 0.0
+    },
+    "passenger_arithmetic": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "typo": {
+      "n": 2,
+      "exact": 1.0
+    }
+  },
+  "confusion": {
+    "book_ride->book_ride": 7,
+    "book_ride->decline": 1
+  },
+  "tool_execution_success": 0.75,
+  "tool_call_error_rate": 0.0,
+  "invalid_tool_call_rate": 0.0,
+  "turns_needing_repair": 0.0,
+  "repair_reasons": {},
+  "repair_exhausted": 0,
+  "exceptions": 0,
+  "llm_calls_per_turn": 1.0,
+  "latency_ms": {
+    "p50": 2876.3,
+    "p95": 14991.8,
+    "mean": 5000.5,
+    "note": "per case (multi-turn cases sum their turns); LLM time only when served from cache"
+  },
+  "tokens_per_turn": {
+    "input": 2068.9,
+    "output": 64.5
+  },
+  "cost_usd_per_1k_turns": 0.0,
+  "all_cached": false,
+  "safety": {
+    "cases_with_foreign_rides": 0,
+    "unauthorized_mutations": 0,
+    "foreign_data_disclosures": 0,
+    "system_prompt_disclosures": 0,
+    "policy_bypasses": 0
+  },
+  "wall_time_s": 40.1,
+  "run_at": "2026-09-29T14:45:23"
+}

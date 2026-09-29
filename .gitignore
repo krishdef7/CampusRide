@@ -8,3 +8,4 @@ models/
 evals/reports/llm_cache.sqlite
 evals/reports/test_predictions.parquet
 loadtest/reports/api_during_loadtest.log
+data/

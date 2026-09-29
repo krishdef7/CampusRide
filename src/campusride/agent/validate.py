@@ -76,8 +76,13 @@ def to_action(tool_name: str, args: dict, now: datetime) -> Action | Repair:
     # book_ride / get_quote
     if not parsed.pickup.strip() or not parsed.dropoff.strip():
         return Repair("schema", "pickup and dropoff must be non-empty; call ask_clarification if the user didn't say.")
-    pickup = _place(parsed.pickup, "pickup")
-    dropoff = _place(parsed.dropoff, "dropoff")
+    return apply_rules(tool_name, _place(parsed.pickup, "pickup"), _place(parsed.dropoff, "dropoff"), parsed.passengers,
+                       parsed.vehicle_type, lambda: resolve_when(parsed.when, now), now)
+
+
+def apply_rules(tool_name: str, pickup: str | Action, dropoff: str | Action, passengers: int, vehicle_type: str,
+                pickup_at_fn, now: datetime) -> Action | Repair:
+    """Business rules shared by every resolution strategy: place outcomes, capacity, time window."""
     for resolved in (pickup, dropoff):
         if isinstance(resolved, Action) and resolved.name == "decline":
             return resolved
@@ -89,20 +94,20 @@ def to_action(tool_name: str, args: dict, now: datetime) -> Action | Repair:
     if pickup == dropoff:
         return Action("decline", decline_reason="same_place", message="Pickup and destination are the same place.")
 
-    if parsed.passengers < 1:
+    if passengers < 1:
         return Repair("schema", "passengers must be at least 1 (the user counts).")
-    vehicle = None if parsed.vehicle_type == "any" else parsed.vehicle_type
-    if parsed.passengers > campus.MAX_PASSENGERS:
+    vehicle = None if vehicle_type == "any" else vehicle_type
+    if passengers > campus.MAX_PASSENGERS:
         return Action("decline", decline_reason="capacity",
                       message=f"Our largest vehicle seats {campus.MAX_PASSENGERS}. Please split into two rides.")
-    if vehicle and parsed.passengers > campus.CAPACITY[vehicle]:
+    if vehicle and passengers > campus.CAPACITY[vehicle]:
         return Action("decline", decline_reason="capacity",
                       message=f"A {vehicle.replace('_', '-')} seats at most {campus.CAPACITY[vehicle]}. Try a cab or split the group.")
 
     if tool_name == "get_quote":
-        return Action("get_quote", pickup=pickup, dropoff=dropoff, passengers=parsed.passengers, vehicle_type=vehicle)
+        return Action("get_quote", pickup=pickup, dropoff=dropoff, passengers=passengers, vehicle_type=vehicle)
 
-    pickup_at = resolve_when(parsed.when, now)
+    pickup_at = pickup_at_fn()
     if isinstance(pickup_at, Repair):
         return pickup_at
     if pickup_at is not None:
@@ -111,4 +116,4 @@ def to_action(tool_name: str, args: dict, now: datetime) -> Action | Repair:
         if pickup_at > now + timedelta(days=7):
             return Action("decline", decline_reason="too_far_ahead", message="Rides can be booked at most 7 days ahead.")
     return Action("book_ride", pickup=pickup, dropoff=dropoff, pickup_at=pickup_at,
-                  passengers=parsed.passengers, vehicle_type=vehicle)
+                  passengers=passengers, vehicle_type=vehicle)

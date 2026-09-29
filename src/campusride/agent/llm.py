@@ -49,6 +49,7 @@ class LLMResult:
     latency_s: float
     cached: bool
     cost_usd: float
+    wait_s: float = 0.0  # client-side rate limiting, failed attempts and backoff (not model latency)
 
 
 def _signature_preserving_chat_openai():
@@ -92,11 +93,11 @@ def build_chat_model(settings: Settings, tools: list) -> BaseChatModel:
         from langchain_anthropic import ChatAnthropic
 
         base = ChatAnthropic(model=settings.llm_model, api_key=settings.llm_api_key, temperature=0,
-                             timeout=settings.llm_timeout_s, max_retries=2, max_tokens=512)
+                             timeout=settings.llm_timeout_s, max_retries=0, max_tokens=512)
         return base.bind_tools(tools, tool_choice="any")
     if settings.llm_provider == "openai":
         ChatOpenAI = _signature_preserving_chat_openai()
-        kwargs = dict(model=settings.llm_model, temperature=0, timeout=settings.llm_timeout_s, max_retries=2)
+        kwargs = dict(model=settings.llm_model, temperature=0, timeout=settings.llm_timeout_s, max_retries=0)
         if settings.llm_api_key:
             kwargs["api_key"] = settings.llm_api_key
         if settings.llm_base_url:
@@ -126,7 +127,7 @@ class ResponseCache:
             self._db.commit()
 
 
-_RETRYABLE = re.compile(r"429|RESOURCE_EXHAUSTED|rate.?limit|503|UNAVAILABLE|overloaded|high demand|500|INTERNAL", re.I)
+_RETRYABLE = re.compile(r"429|RESOURCE_EXHAUSTED|rate.?limit|503|UNAVAILABLE|overloaded|high demand|500|INTERNAL|timed? ?out|APIConnectionError|Connection error", re.I)
 
 
 class _RateLimiter:
@@ -168,7 +169,7 @@ class LLMClient:
             return LLMResult(msg, hit["in"], hit["out"], hit["latency"], True, hit["cost"])
 
         with span("llm.chat", **{"gen_ai.request.model": self.model_name, "gen_ai.operation.name": "chat"}) as s:
-            msg, latency = await self._call_with_retry(messages)
+            msg, latency, wait = await self._call_with_retry(messages)
             usage = msg.usage_metadata or {}
             tin, tout = int(usage.get("input_tokens", 0)), int(usage.get("output_tokens", 0))
             pin, pout = price_for(self.model_name)
@@ -183,16 +184,17 @@ class LLMClient:
         LLM_COST.labels(self.model_name).inc(cost)
         if self.cache:
             self.cache.put(key, {"message": messages_to_dict([msg])[0], "in": tin, "out": tout, "latency": latency, "cost": cost})
-        return LLMResult(msg, tin, tout, latency, False, cost)
+        return LLMResult(msg, tin, tout, latency, False, cost, wait)
 
-    async def _call_with_retry(self, messages: list[BaseMessage]) -> tuple[AIMessage, float]:
-        """Latency is that of the successful attempt; quota waits and retries are not counted as model latency."""
+    async def _call_with_retry(self, messages: list[BaseMessage]) -> tuple[AIMessage, float, float]:
+        """Returns (message, latency of the successful attempt, time lost to rate limits / retries)."""
+        start = time.perf_counter()
         for attempt in range(1, self.max_attempts + 1):
             await self.limiter.wait()
             t0 = time.perf_counter()
             try:
                 msg = await self.model.ainvoke(messages)
-                return msg, time.perf_counter() - t0
+                return msg, time.perf_counter() - t0, t0 - start
             except Exception as e:
                 LLM_CALLS.labels(self.model_name, "error").inc()
                 if attempt == self.max_attempts or not _RETRYABLE.search(str(e)):

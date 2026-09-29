@@ -92,6 +92,7 @@ async def setup_case(pool: asyncpg.Pool, case: dict) -> int:
             owners += [(r, victim) for r in case["setup"]["foreign_rides"]]
         for r, owner in owners:
             p, d = campus.PLACES[r["pickup"]], campus.PLACES[r["dropoff"]]
+            await conn.execute("DELETE FROM rides WHERE id = $1", r["id"])  # reused ids (real_test); see _ride_locks
             await conn.execute(
                 """INSERT INTO rides (id, rider_id, status, pickup_place_id, dropoff_place_id, pickup, dropoff, passengers, pickup_at)
                    VALUES ($1, $2, $3, $4, $5, ST_SetSRID(ST_MakePoint($7, $6), 4326)::geography,
@@ -181,7 +182,23 @@ def score(case: dict, predicted: dict) -> dict:
     return primary
 
 
+_ride_locks: defaultdict[int, asyncio.Lock] = defaultdict(asyncio.Lock)
+
+
 async def run_case(agent: RideAgent | None, pool, case: dict, sem: asyncio.Semaphore) -> dict:
+    """Cases that seed the same ride id (several respondents answering one scenario) run one at a time."""
+    ids = sorted({r["id"] for k in ("rides", "foreign_rides") for r in case["setup"].get(k, [])})
+    locks = [_ride_locks[i] for i in ids]
+    for lock in locks:
+        await lock.acquire()
+    try:
+        return await _run_case(agent, pool, case, sem)
+    finally:
+        for lock in locks:
+            lock.release()
+
+
+async def _run_case(agent: RideAgent | None, pool, case: dict, sem: asyncio.Semaphore) -> dict:
     async with sem:
         now = datetime.fromisoformat(case["now"])
         rider = await setup_case(pool, case)
@@ -375,7 +392,7 @@ def to_markdown(s: dict) -> str:
 async def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--split", default="test",
-                    choices=["dev", "test", "natural_dev", "natural_test", "safety_dev", "safety_test"])
+                    choices=["dev", "test", "natural_dev", "natural_test", "safety_dev", "safety_test", "real_test"])
     ap.add_argument("--baseline", action="store_true")
     ap.add_argument("--oracle", action="store_true", help="harness sanity check: gold tool calls, should score ~100%%")
     ap.add_argument("--provider")
@@ -383,6 +400,8 @@ async def main() -> None:
     ap.add_argument("--base-url")
     ap.add_argument("--concurrency", type=int, default=8)
     ap.add_argument("--limit", type=int)
+    ap.add_argument("--ablation", choices=["no_repair", "llm_resolves"],
+                    help="no_repair: no self-repair retries; llm_resolves: the LLM resolves place IDs and timestamps itself")
     ap.add_argument("--rpm", type=float, help="client-side LLM requests/minute cap (free tiers)")
     ap.add_argument("--no-cache", action="store_true")
     args = ap.parse_args()
@@ -412,8 +431,14 @@ async def main() -> None:
             return RideAgent(LLMClient(settings, TOOLS, model=OracleModel(case)), DbBackend(pool, settings), settings)
         system = "oracle"
     elif not args.baseline:
-        agent = RideAgent(LLMClient(settings, TOOLS), DbBackend(pool, settings), settings)
-        system = f"{settings.llm_provider}:{settings.llm_model}"
+        tools, extra = TOOLS, {}
+        if args.ablation == "no_repair":
+            settings.llm_max_repairs = 0
+        elif args.ablation == "llm_resolves":
+            from campusride.agent import ablation
+            tools, extra = ablation.TOOLS, {"prompt_fn": ablation.system_prompt_direct, "to_action_fn": ablation.to_action_direct}
+        agent = RideAgent(LLMClient(settings, tools), DbBackend(pool, settings), settings, **extra)
+        system = f"{settings.llm_provider}:{settings.llm_model}" + (f"+{args.ablation}" if args.ablation else "")
 
     t0 = time.perf_counter()
     sem = asyncio.Semaphore(args.concurrency)

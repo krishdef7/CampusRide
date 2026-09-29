@@ -50,6 +50,7 @@ class AgentState(TypedDict, total=False):
     input_tokens: int
     output_tokens: int
     llm_latency_s: float
+    llm_wait_s: float
     cost_usd: float
     cached: bool
     action: dict | None
@@ -74,7 +75,7 @@ class TurnResult:
     output_tokens: int
     cost_usd: float
     llm_latency_s: float
-    latency_s: float
+    latency_s: float  # wall time of the turn, excluding client-side rate-limit waits and retried attempts
     cached: bool
     trace_id: str | None = None
     raw_tool_calls: list[dict] = field(default_factory=list)
@@ -97,10 +98,13 @@ def _action_from_state(d: dict) -> Action:
 
 
 class RideAgent:
-    def __init__(self, llm: LLMClient, backend: RideBackend, settings: Settings, checkpointer=None, recorder=None):
+    def __init__(self, llm: LLMClient, backend: RideBackend, settings: Settings, checkpointer=None, recorder=None,
+                 prompt_fn=system_prompt, to_action_fn=to_action):
         self.llm = llm
         self.backend = backend
         self.settings = settings
+        self.prompt_fn = prompt_fn  # swappable for ablations (agent/ablation.py)
+        self.to_action_fn = to_action_fn
         self.recorder = recorder  # async callable(session_id, rider_id, message, TurnResult)
         self.graph = self._build().compile(checkpointer=checkpointer or InMemorySaver())
 
@@ -108,7 +112,7 @@ class RideAgent:
 
     async def _agent(self, state: AgentState) -> dict:
         now = datetime.fromisoformat(state["now"])
-        msgs = [SystemMessage(system_prompt(now)), *state["messages"]]
+        msgs = [SystemMessage(self.prompt_fn(now)), *state["messages"]]
         with span("agent.llm_decide"):
             res = await self.llm.ainvoke(msgs)
         return {
@@ -117,6 +121,7 @@ class RideAgent:
             "input_tokens": state.get("input_tokens", 0) + res.input_tokens,
             "output_tokens": state.get("output_tokens", 0) + res.output_tokens,
             "llm_latency_s": state.get("llm_latency_s", 0.0) + res.latency_s,
+            "llm_wait_s": state.get("llm_wait_s", 0.0) + res.wait_s,
             "cost_usd": state.get("cost_usd", 0.0) + res.cost_usd,
             "cached": res.cached and state.get("cached", True),
         }
@@ -132,7 +137,7 @@ class RideAgent:
             else:
                 call = calls[0]
                 call_id = call["id"]
-                verdict = to_action(call["name"], call["args"], now)
+                verdict = self.to_action_fn(call["name"], call["args"], now)
                 s.set_attribute("agent.tool", call["name"])
             # Extra parallel calls are ignored, but each needs a ToolMessage to keep the history valid.
             extra = [ToolMessage("Ignored: only one tool call per turn.", tool_call_id=c["id"]) for c in calls[1:]]
@@ -222,13 +227,13 @@ class RideAgent:
                 {
                     "messages": [HumanMessage(message)], "rider_id": rider_id, "session_id": session_id,
                     "now": now.isoformat(), "turn": turn, "repairs": 0, "repair_reasons": [], "llm_calls": 0,
-                    "input_tokens": 0, "output_tokens": 0, "llm_latency_s": 0.0, "cost_usd": 0.0, "cached": True,
+                    "input_tokens": 0, "output_tokens": 0, "llm_latency_s": 0.0, "llm_wait_s": 0.0, "cost_usd": 0.0, "cached": True,
                     "action": None, "tool_call_id": None, "result": None, "error": None, "outcome": "", "reply": "",
                 },
                 config,
             )
             trace_id = current_trace_id()
-        latency = time.perf_counter() - t0
+        latency = time.perf_counter() - t0 - final.get("llm_wait_s", 0.0)
         action = _action_from_state(final["action"])
         AGENT_LATENCY.labels(action.name).observe(latency)
         raw_calls = [
