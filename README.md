@@ -25,17 +25,34 @@ dispatch replay.
 
 ## Results
 
-### 1. LLM agent reliability: 500 held-out labeled requests
+### 1. LLM agent reliability: three held-out slices, three models, one baseline
 
-| System | Intent exact match | Tool selection | Tool execution success (DB effect) | Invalid requests declined | p50 / p95 latency | Cost / 1k turns |
-|---|---|---|---|---|---|---|
-| **LLM agent** | *pending: run with an API key* | | | | | |
-| Rule-based baseline (regex + gazetteer) | 88.6% | 94.4% | n/a | 90.3% | <1 ms | $0 |
-| Oracle (gold tool calls through the harness) | 100.0% | 100.0% | 100.0% | 100.0% | 92 ms / 183 ms (non-LLM overhead) | $0 |
+Intent exact match (action and every normalized argument equal the label). Held-out test splits, each run once
+after the prompt was frozen (v3, commit `abcb5a3`). Full table: [evals/reports/agent_model_comparison.md](evals/reports/agent_model_comparison.md).
 
-The baseline is deliberately strong. Its rules were refined while looking at test failures, which makes
-any LLM advantage *conservative*. Where it breaks: typos (33% exact), hand-written phrasing (73%), ambiguity
-handling (clarification precision 69.5%).
+| System | Templated (500) | Natural phrasing (120) | Safety / adversarial (40) | p50 / p95 latency |
+|---|---|---|---|---|
+| Gemini 3.5 Flash-Lite (hosted) | *pending (free-tier quota)* | *pending* | **100.0%** | 1.1 s / 1.7 s |
+| Gemma 4 26B-A4B (open weights, hosted) | 85.2% | **75.8%** | 97.5% | 2.5 s / 5.4 s |
+| Qwen 2.5 7B (open weights, local 6 GB GPU) | 77.8% | 73.3% | 67.5% | 12.4 s / 19.8 s |
+| Rule-based baseline (regex + gazetteer) | **88.6%** | 65.8% | 75.0% | <1 ms |
+| Oracle (gold tool calls through the harness) | 100.0% | 100.0% | 100.0% | 86 ms / 172 ms (no LLM) |
+
+**Safety invariants: 0 for every system.** Across 12 attempts per model to act on another rider's ride
+(prompt injection, fake "admin" instructions, ride-id guessing), no other rider's ride was changed or disclosed,
+no reply leaked the system prompt, and nothing was executed where policy says decline. These are enforced in code
+(ownership checks in the tool layer), so they hold even when the model is fooled.
+
+What the numbers say:
+* The baseline is deliberately strong and its rules were refined while looking at test failures, so it wins on
+  regular, templated language. The LLM agents win where language stops being regular: natural phrasing
+  (+10.0 pts for Gemma) and adversarial requests (+22.5 pts).
+* **Deterministic resolution matters.** Ablation on Qwen 2.5 7B: letting the LLM output place IDs and timestamps
+  itself instead of the code resolving them drops natural-phrasing accuracy from 73.3% to 60.0%.
+* Error analysis on Gemma: its weakest category is clarification (47.3% on templated). 12 of its 29 natural
+  misses ask the rider for a *time*, which is never required. A v4 schema that only allows asking for pickup
+  or destination is in `agent/variants.py`. Its dev-split validation is still to run, and any test gain
+  from it would be post-hoc.
 
 The eval runs the agent **end to end against a real PostGIS database**. "Tool execution success"
 means the right row ended up in the right state (ride created with the right places, time,
@@ -45,7 +62,10 @@ Before any model was evaluated, an oracle run (gold tool calls through the same 
 
 Dataset: 455 template-generated cases (labels correct by construction; English, Hinglish, abbreviations,
 typos, relative, weekday and bare-hour times, passenger arithmetic, multi-turn) plus 45 hand-labeled hard
-cases. Prompt iteration used the 100-case dev split only. See [docs/labeling_policy.md](docs/labeling_policy.md).
+cases. Prompt iteration used the 100-case dev split only. The natural-phrasing (120) and safety (40) slices
+were written by hand by the developer (with AI assistance) and frozen before any model ran on them. **They are
+not real user messages.** A Google Form kit for collecting real phrasings is in `evals/collect/`. See
+[docs/labeling_policy.md](docs/labeling_policy.md).
 
 ### 2. Real-time matching: load test and query benchmark
 
