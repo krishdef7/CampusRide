@@ -87,6 +87,13 @@ async def test_rate_limit_errors_are_retried_and_excluded_from_latency(monkeypat
     assert res.wait_s >= 0 and res.latency_s < 1
 
 
+def test_cache_key_ignores_message_ids():
+    """LangGraph gives each message a random id per run; the cache must still hit on re-runs."""
+    client = LLMClient(Settings(llm_provider="fake"), TOOLS, model=object())
+    assert client._key([HumanMessage("book a ride", id="a")]) == client._key([HumanMessage("book a ride", id="b")])
+    assert client._key([HumanMessage("book a ride")]) != client._key([HumanMessage("cancel my ride")])
+
+
 async def test_non_retryable_errors_fail_fast():
     class Broken:
         async def ainvoke(self, messages):
@@ -117,3 +124,15 @@ def test_also_ok_labels_count_as_exact_only_for_listed_alternatives():
     assert score(case, {"action": "clarify", "missing": ["dropoff"]})["exact"]
     assert not score(case, {"action": "clarify", "missing": ["pickup"]})["exact"]
     assert not score(case, {"action": "decline", "reason": "out_of_scope"})["exact"]
+
+
+def test_v4_clarification_only_for_pickup_or_dropoff():
+    from campusride.agent.validate import Repair
+    from campusride.agent.variants import to_action_v4
+
+    assert isinstance(to_action_v4("ask_clarification", {"missing": ["dropoff", "time"], "question": "?"}, NOW), Repair)
+    assert isinstance(to_action_v4("ask_clarification", {"missing": [], "question": "?"}, NOW), Repair)
+    ok = to_action_v4("ask_clarification", {"missing": ["pickup"], "question": "Where from?"}, NOW)
+    assert ok.name == "clarify" and ok.missing == ("pickup",)
+    booked = to_action_v4("book_ride", {"pickup": "RB", "dropoff": "LHC"}, NOW)
+    assert (booked.name, booked.pickup, booked.dropoff) == ("book_ride", "rajendra", "lhc")

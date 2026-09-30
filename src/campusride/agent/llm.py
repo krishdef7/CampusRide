@@ -159,7 +159,9 @@ class LLMClient:
         self._tools_sig = json.dumps([t.model_json_schema() for t in tools], sort_keys=True)
 
     def _key(self, messages: list[BaseMessage]) -> str:
-        blob = json.dumps([self.model_name, messages_to_dict(messages), self._tools_sig], sort_keys=True, default=str)
+        # LangGraph assigns every message a fresh random id, so ids must not be part of the key.
+        msgs = [{**m, "data": {k: v for k, v in m["data"].items() if k != "id"}} for m in messages_to_dict(messages)]
+        blob = json.dumps([self.model_name, msgs, self._tools_sig], sort_keys=True, default=str)
         return hashlib.sha256(blob.encode()).hexdigest()
 
     async def ainvoke(self, messages: list[BaseMessage]) -> LLMResult:

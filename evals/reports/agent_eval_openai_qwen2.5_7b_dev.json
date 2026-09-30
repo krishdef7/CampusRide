@@ -1,80 +1,174 @@
 {
   "system": "openai:qwen2.5:7b",
   "split": "dev",
-  "n_cases": 8,
-  "intent_exact_match": 0.75,
-  "action_accuracy": 0.875,
+  "n_cases": 100,
+  "intent_exact_match": 0.82,
+  "action_accuracy": 0.84,
   "field_accuracy": {
-    "pickup": 0.875,
-    "dropoff": 0.75,
-    "pickup_at": 0.75,
-    "passengers": 0.875,
-    "vehicle_type": 0.875
+    "pickup": 0.9167,
+    "dropoff": 0.9,
+    "pickup_at": 0.92,
+    "passengers": 0.9333,
+    "vehicle_type": 0.9333,
+    "ride_id": 0.9375,
+    "missing": 0.3333
   },
   "clarification": {
-    "precision": 0.0,
-    "recall": 0.0
+    "precision": 0.3636,
+    "recall": 0.3333
   },
   "invalid_request_handling": {
-    "n": 0,
-    "declined": null,
-    "correct_reason": null
+    "n": 12,
+    "declined": 0.75,
+    "correct_reason": 0.6667
   },
   "by_category": {
     "book": {
-      "n": 8,
-      "exact": 0.75
+      "n": 38,
+      "exact": 0.9211
+    },
+    "cancel": {
+      "n": 7,
+      "exact": 0.8571
+    },
+    "clarify": {
+      "n": 11,
+      "exact": 0.3636
+    },
+    "decline": {
+      "n": 11,
+      "exact": 0.7273
+    },
+    "handwritten": {
+      "n": 10,
+      "exact": 0.9
+    },
+    "multiturn": {
+      "n": 7,
+      "exact": 0.5714
+    },
+    "quote": {
+      "n": 9,
+      "exact": 1.0
+    },
+    "status": {
+      "n": 7,
+      "exact": 1.0
     }
   },
   "by_expected_action": {
     "book_ride": {
+      "n": 50,
+      "exact": 0.88
+    },
+    "cancel_ride": {
       "n": 8,
+      "exact": 0.875
+    },
+    "clarify": {
+      "n": 12,
+      "exact": 0.3333
+    },
+    "decline": {
+      "n": 12,
       "exact": 0.75
+    },
+    "get_quote": {
+      "n": 10,
+      "exact": 1.0
+    },
+    "get_ride_status": {
+      "n": 8,
+      "exact": 1.0
     }
   },
   "by_tag": {
     "abbrev": {
-      "n": 3,
-      "exact": 0.6667
+      "n": 15,
+      "exact": 0.9333
     },
     "bare_hour": {
       "n": 1,
       "exact": 0.0
     },
+    "capacity": {
+      "n": 3,
+      "exact": 1.0
+    },
+    "explicit_id": {
+      "n": 6,
+      "exact": 1.0
+    },
     "hinglish": {
-      "n": 1,
-      "exact": 0.0
+      "n": 11,
+      "exact": 0.9091
+    },
+    "multiturn": {
+      "n": 8,
+      "exact": 0.625
+    },
+    "out_of_area": {
+      "n": 3,
+      "exact": 1.0
+    },
+    "out_of_scope": {
+      "n": 4,
+      "exact": 0.25
     },
     "passenger_arithmetic": {
+      "n": 7,
+      "exact": 1.0
+    },
+    "relative_time": {
+      "n": 2,
+      "exact": 1.0
+    },
+    "same_place": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "terse": {
       "n": 1,
       "exact": 1.0
     },
     "typo": {
-      "n": 2,
-      "exact": 1.0
+      "n": 5,
+      "exact": 0.8
     }
   },
   "confusion": {
-    "book_ride->book_ride": 7,
-    "book_ride->decline": 1
+    "book_ride->book_ride": 46,
+    "book_ride->clarify": 3,
+    "book_ride->decline": 1,
+    "cancel_ride->cancel_ride": 7,
+    "cancel_ride->clarify": 1,
+    "clarify->book_ride": 8,
+    "clarify->clarify": 4,
+    "decline->clarify": 3,
+    "decline->decline": 9,
+    "get_quote->get_quote": 10,
+    "get_ride_status->get_ride_status": 8
   },
-  "tool_execution_success": 0.75,
+  "tool_execution_success": 0.8816,
   "tool_call_error_rate": 0.0,
-  "invalid_tool_call_rate": 0.0,
-  "turns_needing_repair": 0.0,
-  "repair_reasons": {},
-  "repair_exhausted": 0,
+  "invalid_tool_call_rate": 0.1074,
+  "turns_needing_repair": 0.09,
+  "repair_reasons": {
+    "no_tool_call": 14,
+    "schema": 3
+  },
+  "repair_exhausted": 4,
   "exceptions": 0,
-  "llm_calls_per_turn": 1.0,
+  "llm_calls_per_turn": 1.12,
   "latency_ms": {
-    "p50": 2876.3,
-    "p95": 14991.8,
-    "mean": 5000.5,
+    "p50": 10076.3,
+    "p95": 17075.9,
+    "mean": 9463.5,
     "note": "per case (multi-turn cases sum their turns); LLM time only when served from cache"
   },
   "tokens_per_turn": {
-    "input": 2068.9,
-    "output": 64.5
+    "input": 2527.7,
+    "output": 54.9
   },
   "cost_usd_per_1k_turns": 0.0,
   "all_cached": false,
@@ -85,6 +179,6 @@
     "system_prompt_disclosures": 0,
     "policy_bypasses": 0
   },
-  "wall_time_s": 40.1,
-  "run_at": "2026-09-29T14:45:23"
+  "wall_time_s": 947.3,
+  "run_at": "2026-09-29T15:24:47"
 }

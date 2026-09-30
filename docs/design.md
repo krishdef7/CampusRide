@@ -19,6 +19,26 @@ user ─▶ agent (1 LLM call, forced tool choice) ─▶ validate (deterministi
 | LangGraph checkpointer keyed by session | Multi-turn clarification ("to where?" → "LHC") | In-memory, so a production deploy would swap in `PostgresSaver` |
 | Every turn persisted to `agent_turns` | Production traffic → error analysis → new eval cases | Storage |
 
+### Evaluating the agent
+
+* **Four slices, each answering a different question.** Templated `test` (500) measures coverage of the
+  policy; `natural_test` (120) measures messy real-world phrasing; `safety_test` (40) measures injection and
+  authorization; `real_test` (collected via `evals/collect/`) replaces "written by the developer" with real users.
+* **Hard invariants beside accuracy.** A wrong label is a quality problem; cancelling someone else's ride is a
+  security problem. The safety slice seeds rides owned by another rider and checks, whatever the model did,
+  that they were never changed or disclosed. The oracle run *tries* to cancel those rides and the backend
+  refuses every time, so authorization lives in code, not in the prompt.
+* **Ablation: who resolves places and times?** `--ablation llm_resolves` gives the LLM place IDs and asks it
+  for absolute timestamps (agent/ablation.py). Everything else is held fixed, so the score difference is what
+  deterministic resolution buys.
+* **Versions, freeze points and post-hoc labels.** Test slices and prompt v3 were committed before any test
+  run. Error analysis *on test* later found a schema flaw (`ask_clarification` accepted "time", so a model
+  asked for a time on complete bookings). The fix is v4 (agent/variants.py), validated on dev splits; its
+  test numbers are reported as post-hoc, never replacing the frozen v3 results.
+* **Free-tier engineering.** Client-side RPM limiting, retry with server-suggested backoff, a response cache
+  that makes interrupted runs resumable, and latency that excludes quota waits (otherwise p95 measures the
+  rate limiter, not the model). Gemini 3 thought signatures are round-tripped on tool calls.
+
 ## 2. Matching: correctness first, then speed
 
 * **Create + match in one statement.** For a new ASAP ride, one SQL statement takes the KNN top-K eligible
@@ -66,6 +86,10 @@ user ─▶ agent (1 LLM call, forced tool choice) ─▶ validate (deterministi
   and compares repositioning driven by no forecast, seasonal-naive, LightGBM and an oracle. It reports
   rider wait time, abandonment and the dead-heading cost that repositioning adds.
 
+* **External validity on real data.** `forecasting/real_nyc.py` runs the unchanged protocol on NYC TLC
+  green-taxi pickups (10 zones, a few pickups per 30 min, similar to campus scale). US federal holidays stand
+  in for fests and Open-Meteo *archived forecasts* (not observed weather) for the rain forecast.
+
 ## 4. Observability
 
 * Prometheus: HTTP latency by route template, match latency and outcomes, ride transitions, WebSocket
@@ -80,5 +104,5 @@ user ─▶ agent (1 LLM call, forced tool choice) ─▶ validate (deterministi
 
 1. Mine `agent_turns` for failed or clarified turns and add them to the eval set (the eval flywheel).
 2. Replace the simulator with real logs. Nothing downstream changes, since the pipeline only
-   needs `(zone, ts, y)` and calendar flags.
+   needs `(zone, ts, y)` and calendar flags (already demonstrated with NYC taxi data).
 3. Road-network ETAs (OSRM), shared rides (pooling as a constrained assignment), surge-aware allocation.

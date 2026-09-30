@@ -402,6 +402,7 @@ async def main() -> None:
     ap.add_argument("--limit", type=int)
     ap.add_argument("--ablation", choices=["no_repair", "llm_resolves"],
                     help="no_repair: no self-repair retries; llm_resolves: the LLM resolves place IDs and timestamps itself")
+    ap.add_argument("--variant", choices=["v4"], help="candidate prompt/tool version (agent/variants.py); default v3")
     ap.add_argument("--rpm", type=float, help="client-side LLM requests/minute cap (free tiers)")
     ap.add_argument("--no-cache", action="store_true")
     args = ap.parse_args()
@@ -437,8 +438,12 @@ async def main() -> None:
         elif args.ablation == "llm_resolves":
             from campusride.agent import ablation
             tools, extra = ablation.TOOLS, {"prompt_fn": ablation.system_prompt_direct, "to_action_fn": ablation.to_action_direct}
+        if args.variant:
+            from campusride.agent.variants import VARIANTS
+            tools, extra = VARIANTS[args.variant]
         agent = RideAgent(LLMClient(settings, tools), DbBackend(pool, settings), settings, **extra)
-        system = f"{settings.llm_provider}:{settings.llm_model}" + (f"+{args.ablation}" if args.ablation else "")
+        system = (f"{settings.llm_provider}:{settings.llm_model}" + (f"+{args.ablation}" if args.ablation else "")
+                  + (f"+{args.variant}" if args.variant else ""))
 
     t0 = time.perf_counter()
     sem = asyncio.Semaphore(args.concurrency)
