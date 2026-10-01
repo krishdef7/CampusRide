@@ -51,8 +51,10 @@ What the numbers say:
   itself instead of the code resolving them drops natural-phrasing accuracy from 73.3% to 60.0%.
 * Error analysis on Gemma: its weakest category is clarification (47.3% on templated). 12 of its 29 natural
   misses ask the rider for a *time*, which is never required. A v4 schema that only allows asking for pickup
-  or destination is in `agent/variants.py`. Its dev-split validation is still to run, and any test gain
-  from it would be post-hoc.
+  or destination is in `agent/variants.py`. Validated on dev splits only, it does what it was designed to do:
+  clarification precision rises from 85.7% to 100% (dev) and from 66.7% to 100% (natural_dev). The overall gain
+  is small (83.0% → 85.0% on dev, 86.7% → 90.0% on natural_dev) and within noise at these sizes, so v3 stays the
+  frozen default that the test numbers above were measured with.
 
 The eval runs the agent **end to end against a real PostGIS database**. "Tool execution success"
 means the right row ended up in the right state (ride created with the right places, time,

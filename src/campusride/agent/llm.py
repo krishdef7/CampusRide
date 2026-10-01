@@ -15,7 +15,9 @@ from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, messages_from_dict, messages_to_dict
 
 from campusride.config import Settings
-from campusride.observability import LLM_CALLS, LLM_COST, LLM_LATENCY, LLM_TOKENS, span
+from campusride.observability import LLM_CALLS, LLM_COST, LLM_LATENCY, LLM_TOKENS, get_logger, span
+
+log = get_logger(__name__)
 
 # USD per 1M tokens (input, output). List prices at time of writing; edit as they change.
 PRICES: dict[str, tuple[float, float]] = {
@@ -203,5 +205,7 @@ class LLMClient:
                     raise
                 hint = re.search(r"retry in ([\d.]+)s|retryDelay['\": ]+(\d+)s", str(e))
                 delay = float(next(g for g in hint.groups() if g)) if hint else min(60.0, 2.0 ** attempt)
+                log.warning("llm_retry", model=self.model_name, attempt=attempt, delay_s=round(delay, 1),
+                            error=f"{type(e).__name__}: {e}"[:200])
                 await asyncio.sleep(delay + 0.5)
         raise AssertionError("unreachable")

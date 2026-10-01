@@ -1,0 +1,181 @@
+{
+  "system": "openai:gemma-4-26b-a4b-it",
+  "split": "dev",
+  "n_cases": 100,
+  "intent_exact_match": 0.83,
+  "action_accuracy": 0.95,
+  "field_accuracy": {
+    "pickup": 0.9333,
+    "dropoff": 0.9333,
+    "pickup_at": 0.86,
+    "passengers": 0.9333,
+    "vehicle_type": 0.9,
+    "ride_id": 0.9375,
+    "missing": 0.4167
+  },
+  "clarification": {
+    "precision": 0.8571,
+    "recall": 1.0
+  },
+  "invalid_request_handling": {
+    "n": 12,
+    "declined": 1.0,
+    "correct_reason": 1.0
+  },
+  "by_category": {
+    "book": {
+      "n": 38,
+      "exact": 0.8684
+    },
+    "cancel": {
+      "n": 7,
+      "exact": 0.8571
+    },
+    "clarify": {
+      "n": 11,
+      "exact": 0.3636
+    },
+    "decline": {
+      "n": 11,
+      "exact": 1.0
+    },
+    "handwritten": {
+      "n": 10,
+      "exact": 0.9
+    },
+    "multiturn": {
+      "n": 7,
+      "exact": 0.5714
+    },
+    "quote": {
+      "n": 9,
+      "exact": 1.0
+    },
+    "status": {
+      "n": 7,
+      "exact": 1.0
+    }
+  },
+  "by_expected_action": {
+    "book_ride": {
+      "n": 50,
+      "exact": 0.82
+    },
+    "cancel_ride": {
+      "n": 8,
+      "exact": 0.875
+    },
+    "clarify": {
+      "n": 12,
+      "exact": 0.4167
+    },
+    "decline": {
+      "n": 12,
+      "exact": 1.0
+    },
+    "get_quote": {
+      "n": 10,
+      "exact": 1.0
+    },
+    "get_ride_status": {
+      "n": 8,
+      "exact": 1.0
+    }
+  },
+  "by_tag": {
+    "abbrev": {
+      "n": 15,
+      "exact": 0.7333
+    },
+    "bare_hour": {
+      "n": 1,
+      "exact": 0.0
+    },
+    "capacity": {
+      "n": 3,
+      "exact": 1.0
+    },
+    "explicit_id": {
+      "n": 6,
+      "exact": 1.0
+    },
+    "hinglish": {
+      "n": 11,
+      "exact": 0.7273
+    },
+    "multiturn": {
+      "n": 8,
+      "exact": 0.625
+    },
+    "out_of_area": {
+      "n": 3,
+      "exact": 1.0
+    },
+    "out_of_scope": {
+      "n": 4,
+      "exact": 1.0
+    },
+    "passenger_arithmetic": {
+      "n": 7,
+      "exact": 0.8571
+    },
+    "relative_time": {
+      "n": 2,
+      "exact": 0.5
+    },
+    "same_place": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "terse": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "typo": {
+      "n": 5,
+      "exact": 1.0
+    }
+  },
+  "confusion": {
+    "book_ride->book_ride": 46,
+    "book_ride->clarify": 1,
+    "book_ride->decline": 1,
+    "book_ride->error": 1,
+    "book_ride->get_quote": 1,
+    "cancel_ride->cancel_ride": 7,
+    "cancel_ride->clarify": 1,
+    "clarify->clarify": 12,
+    "decline->decline": 12,
+    "get_quote->get_quote": 10,
+    "get_ride_status->get_ride_status": 8
+  },
+  "tool_execution_success": 0.8684,
+  "tool_call_error_rate": 0.0,
+  "invalid_tool_call_rate": 0.0,
+  "turns_needing_repair": 0.0,
+  "repair_reasons": {},
+  "repair_exhausted": 0,
+  "exceptions": 1,
+  "llm_calls_per_turn": 0.991,
+  "latency_ms": {
+    "p50": 2292.6,
+    "p95": 4641.9,
+    "mean": 2665.0,
+    "note": "per case (multi-turn cases sum their turns); LLM time only when served from cache"
+  },
+  "tokens_per_turn": {
+    "input": 2363.9,
+    "output": 46.3
+  },
+  "cost_usd_per_1k_turns": 0.0,
+  "all_cached": true,
+  "safety": {
+    "cases_with_foreign_rides": 0,
+    "unauthorized_mutations": 0,
+    "foreign_data_disclosures": 0,
+    "system_prompt_disclosures": 0,
+    "policy_bypasses": 0
+  },
+  "wall_time_s": 94.8,
+  "run_at": "2026-10-01T14:01:39"
+}
