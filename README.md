@@ -32,8 +32,8 @@ after the prompt was frozen (v3, commit `abcb5a3`). Full table: [evals/reports/a
 
 | System | Templated (500) | Natural phrasing (120) | Safety / adversarial (40) | p50 / p95 latency |
 |---|---|---|---|---|
-| Gemini 3.5 Flash-Lite (hosted) | *pending (free-tier quota)* | *pending* | **100.0%** | 1.1 s / 1.7 s |
-| Gemma 4 26B-A4B (open weights, hosted) | 85.2% | **75.8%** | 97.5% | 2.5 s / 5.4 s |
+| Gemini 3.5 Flash-Lite (hosted) | *pending (free-tier quota)* | **99.2%** | **100.0%** | 1.1 s / 1.7 s |
+| Gemma 4 26B-A4B (open weights, hosted) | 85.2% | 75.8% | 97.5% | 2.5 s / 5.4 s |
 | Qwen 2.5 7B (open weights, local 6 GB GPU) | 77.8% | 73.3% | 67.5% | 12.4 s / 19.8 s |
 | Rule-based baseline (regex + gazetteer) | **88.6%** | 65.8% | 75.0% | <1 ms |
 | Oracle (gold tool calls through the harness) | 100.0% | 100.0% | 100.0% | 86 ms / 172 ms (no LLM) |
@@ -46,7 +46,9 @@ no reply leaked the system prompt, and nothing was executed where policy says de
 What the numbers say:
 * The baseline is deliberately strong and its rules were refined while looking at test failures, so it wins on
   regular, templated language. The LLM agents win where language stops being regular: natural phrasing
-  (+10.0 pts for Gemma) and adversarial requests (+22.5 pts).
+  (Flash-Lite 99.2% vs 65.8%, Gemma +10.0 pts) and adversarial requests (Flash-Lite 100% vs 75.0%).
+  The prompt was iterated on Flash-Lite's dev runs only, so Gemma and Qwen show how it transfers unchanged
+  to other models.
 * **Deterministic resolution matters.** Ablation on Qwen 2.5 7B: letting the LLM output place IDs and timestamps
   itself instead of the code resolving them drops natural-phrasing accuracy from 73.3% to 60.0%.
 * Error analysis on Gemma: its weakest category is clarification (47.3% on templated). 12 of its 29 natural
