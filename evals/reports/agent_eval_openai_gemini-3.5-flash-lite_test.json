@@ -1,0 +1,229 @@
+{
+  "system": "openai:gemini-3.5-flash-lite",
+  "split": "test",
+  "n_cases": 500,
+  "intent_exact_match": 0.994,
+  "action_accuracy": 0.998,
+  "field_accuracy": {
+    "pickup": 1.0,
+    "dropoff": 1.0,
+    "pickup_at": 0.9922,
+    "passengers": 1.0,
+    "vehicle_type": 1.0,
+    "ride_id": 1.0,
+    "missing": 0.9831
+  },
+  "clarification": {
+    "precision": 1.0,
+    "recall": 0.9831
+  },
+  "invalid_request_handling": {
+    "n": 62,
+    "declined": 1.0,
+    "correct_reason": 0.9839
+  },
+  "by_category": {
+    "book": {
+      "n": 200,
+      "exact": 0.99
+    },
+    "cancel": {
+      "n": 35,
+      "exact": 1.0
+    },
+    "clarify": {
+      "n": 55,
+      "exact": 0.9818
+    },
+    "decline": {
+      "n": 55,
+      "exact": 1.0
+    },
+    "handwritten": {
+      "n": 45,
+      "exact": 1.0
+    },
+    "multiturn": {
+      "n": 30,
+      "exact": 1.0
+    },
+    "quote": {
+      "n": 45,
+      "exact": 1.0
+    },
+    "status": {
+      "n": 35,
+      "exact": 1.0
+    }
+  },
+  "by_expected_action": {
+    "book_ride": {
+      "n": 255,
+      "exact": 0.9922
+    },
+    "cancel_ride": {
+      "n": 37,
+      "exact": 1.0
+    },
+    "clarify": {
+      "n": 59,
+      "exact": 0.9831
+    },
+    "decline": {
+      "n": 62,
+      "exact": 1.0
+    },
+    "get_quote": {
+      "n": 49,
+      "exact": 1.0
+    },
+    "get_ride_status": {
+      "n": 38,
+      "exact": 1.0
+    }
+  },
+  "by_tag": {
+    "abbrev": {
+      "n": 58,
+      "exact": 1.0
+    },
+    "ambiguous_place": {
+      "n": 13,
+      "exact": 1.0
+    },
+    "bare_hour": {
+      "n": 4,
+      "exact": 0.5
+    },
+    "booking_distractor": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "capacity": {
+      "n": 20,
+      "exact": 1.0
+    },
+    "day_offset": {
+      "n": 9,
+      "exact": 1.0
+    },
+    "distractor_time": {
+      "n": 3,
+      "exact": 1.0
+    },
+    "explicit_id": {
+      "n": 66,
+      "exact": 1.0
+    },
+    "hinglish": {
+      "n": 60,
+      "exact": 1.0
+    },
+    "implicit_pickup": {
+      "n": 3,
+      "exact": 1.0
+    },
+    "indirect": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "multiturn": {
+      "n": 33,
+      "exact": 1.0
+    },
+    "no_context": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "out_of_area": {
+      "n": 20,
+      "exact": 1.0
+    },
+    "out_of_scope": {
+      "n": 8,
+      "exact": 1.0
+    },
+    "passenger_arithmetic": {
+      "n": 31,
+      "exact": 1.0
+    },
+    "relative_time": {
+      "n": 27,
+      "exact": 1.0
+    },
+    "same_place": {
+      "n": 7,
+      "exact": 1.0
+    },
+    "slang": {
+      "n": 2,
+      "exact": 1.0
+    },
+    "terse": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "typo": {
+      "n": 27,
+      "exact": 1.0
+    },
+    "vehicle_distractor": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "vehicle_slang": {
+      "n": 1,
+      "exact": 1.0
+    },
+    "verbal_time": {
+      "n": 3,
+      "exact": 1.0
+    },
+    "weekday": {
+      "n": 16,
+      "exact": 1.0
+    },
+    "word_order": {
+      "n": 2,
+      "exact": 1.0
+    }
+  },
+  "confusion": {
+    "book_ride->book_ride": 255,
+    "cancel_ride->cancel_ride": 37,
+    "clarify->clarify": 58,
+    "clarify->decline": 1,
+    "decline->decline": 62,
+    "get_quote->get_quote": 49,
+    "get_ride_status->get_ride_status": 38
+  },
+  "tool_execution_success": 0.9947,
+  "tool_call_error_rate": 0.0,
+  "invalid_tool_call_rate": 0.0,
+  "turns_needing_repair": 0.0,
+  "repair_reasons": {},
+  "repair_exhausted": 0,
+  "exceptions": 0,
+  "llm_calls_per_turn": 1.0,
+  "latency_ms": {
+    "p50": 1138.6,
+    "p95": 2697.8,
+    "mean": 1363.9,
+    "note": "per case (multi-turn cases sum their turns); LLM time only when served from cache"
+  },
+  "tokens_per_turn": {
+    "input": 2386.5,
+    "output": 42.2
+  },
+  "cost_usd_per_1k_turns": 0.0,
+  "all_cached": false,
+  "safety": {
+    "cases_with_foreign_rides": 0,
+    "unauthorized_mutations": 0,
+    "foreign_data_disclosures": 0,
+    "system_prompt_disclosures": 0,
+    "policy_bypasses": 0
+  },
+  "wall_time_s": 251.4,
+  "run_at": "2026-10-04T02:46:23"
+}
