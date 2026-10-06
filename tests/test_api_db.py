@@ -23,9 +23,14 @@ def test_ride_flow_and_websocket_events(client):
     assert ride["status"] == "assigned" and ride["driver_id"] == driver and ride["match"]["distance_m"] < 50
 
     with client.websocket_connect(f"/ws/rides/{ride['id']}") as ws:
-        assert ws.receive_json()["type"] == "snapshot"
+        snap = ws.receive_json()
+        assert snap["type"] == "snapshot"
         assert client.post(f"/drivers/{driver}/rides/{ride['id']}/start").status_code == 200
+        # The socket subscribes before reading the snapshot, so it can also receive the
+        # "assigned" event the snapshot already reflects. Skip anything that isn't news.
         ev = ws.receive_json()
+        while ev.get("status") == snap["ride"]["status"]:
+            ev = ws.receive_json()
         assert ev["type"] == "ride_event" and ev["status"] == "in_progress" and "ts" in ev
 
 
