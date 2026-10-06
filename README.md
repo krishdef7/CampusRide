@@ -5,6 +5,14 @@ for on-campus e-rickshaws, autos and cabs. Each part has a benchmark behind it: 
 agent eval, a load test with correctness invariants, and a backtested forecast with an ablation and a
 dispatch replay.
 
+**Headline results** (each measured by a script in this repo; details below):
+- **Agent:** 99.4% intent exact match on the 500-case held-out test set (99.2% natural phrasing, 100% adversarial),
+  0 safety-invariant violations, vs 88.6% for a strong rule-based baseline.
+- **Matching:** 10,000 ride requests at ~196 req/s, p95 16.8 ms, 0 invariant violations across 30,000 audited
+  driver state transitions. Finding and fixing a Postgres NOTIFY commit-lock bottleneck took throughput from ~86 to ~590 req/s.
+- **Forecast:** LightGBM day-ahead demand cuts MAE by 27.6% vs seasonal-naive (95% CI 24.1–31.2%), which is 83% of the
+  achievable gain.
+
 > **Data honesty.** Place names are real IIT Roorkee landmarks (approximate coordinates). **All rides,
 > drivers and demand are simulated.** No real users or trip logs are involved. Every number below
 > is produced by a script in this repo, and each report says which data it used.
