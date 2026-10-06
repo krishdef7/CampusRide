@@ -1,5 +1,7 @@
 # CampusRide: AI-enabled real-time campus mobility (IIT Roorkee)
 
+[![CI](https://github.com/krishdef7/CampusRide/actions/workflows/ci.yml/badge.svg)](https://github.com/krishdef7/CampusRide/actions/workflows/ci.yml)
+
 An LLM ride-booking agent, a real-time spatial matching backend and a demand-forecasting pipeline
 for on-campus e-rickshaws, autos and cabs. Each part has a benchmark behind it: a held-out 500-case
 agent eval, a load test with correctness invariants, and a backtested forecast with an ablation and a
