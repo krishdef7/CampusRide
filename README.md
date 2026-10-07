@@ -38,7 +38,7 @@ dispatch replay.
 ### 1. LLM agent reliability: three held-out slices, three models, one baseline
 
 Intent exact match (action and every normalized argument equal the label). Held-out test splits, each run once
-after the prompt was frozen (v3, commit `abcb5a3`). Full table: [evals/reports/agent_model_comparison.md](evals/reports/agent_model_comparison.md).
+after the prompt was frozen (v3, commit `68cca3c`). Full table: [evals/reports/agent_model_comparison.md](evals/reports/agent_model_comparison.md).
 
 | System | Templated (500) | Natural phrasing (120) | Safety / adversarial (40) | p50 / p95 latency |
 |---|---|---|---|---|
@@ -201,7 +201,7 @@ python -m venv .venv && .venv/Scripts/activate   # (Linux/macOS: source .venv/bi
 pip install -e ".[dev]"
 cp .env.example .env                         # add an LLM key to enable the agent
 
-pytest -q                                    # 69 tests (unit + PostGIS integration, incl. a 200-way concurrency race)
+pytest -q                                    # 80 tests (unit + PostGIS integration, incl. a 200-way concurrency race)
 uvicorn campusride.api.app:create_app --factory --port 8000
 python scripts/driver_sim.py --drivers 40    # simulated fleet; open http://localhost:8000 for the live map + chat
 ```
