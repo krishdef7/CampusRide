@@ -13,7 +13,7 @@ dispatch replay.
 - **Matching:** 10,000 ride requests at ~196 req/s, p95 16.8 ms, 0 invariant violations across 30,000 audited
   driver state transitions. Finding and fixing a Postgres NOTIFY commit-lock bottleneck took throughput from ~86 to ~590 req/s.
 - **Forecast:** LightGBM day-ahead demand cuts MAE by 27.6% vs seasonal-naive (95% CI 24.1–31.2%), which is 83% of the
-  achievable gain.
+  gain an oracle that knows the true demand rate gets. On real NYC taxi data the same protocol gives 23.0%.
 
 > **Data honesty.** Place names are real IIT Roorkee landmarks (approximate coordinates). **All rides,
 > drivers and demand are simulated.** No real users or trip logs are involved. Every number below
@@ -63,8 +63,8 @@ What the numbers say:
   other models. Part of the gap is model capability, and part may be prompt fit.
 * **Deterministic resolution matters.** Ablation on Qwen 2.5 7B: letting the LLM output place IDs and timestamps
   itself instead of the code resolving them drops natural-phrasing accuracy from 73.3% to 60.0%.
-* Error analysis on Gemma: its weakest category is clarification (47.3% on templated). 12 of its 29 natural
-  misses ask the rider for a *time*, which is never required. A v4 schema that only allows asking for pickup
+* Error analysis on Gemma: its weakest category is clarification (47.3% on templated). 11 of its 29 natural
+  misses end with it asking the rider for a *time*, which is never required. A v4 schema that only allows asking for pickup
   or destination is in `agent/variants.py`. Validated on dev splits only, it does what it was designed to do:
   clarification precision rises from 85.7% to 100% (dev) and from 66.7% to 100% (natural_dev). The overall gain
   is small (83.0% → 85.0% on dev, 86.7% → 90.0% on natural_dev) and within noise at these sizes, so v3 stays the
@@ -74,7 +74,9 @@ The eval runs the agent **end to end against a real PostGIS database**. "Tool ex
 means the right row ended up in the right state (ride created with the right places, time,
 passengers and vehicle; the right ride cancelled), not merely that a tool call was emitted.
 Before any model was evaluated, an oracle run (gold tool calls through the same harness) scored
-100.0% on every metric. That shows the labels, validator, executor and scorer are mutually consistent.
+100.0% exact match on every split and 100.0% on every metric of the templated test. (On the safety split its
+"tool execution success" is 50%: half of those cases try to act on another rider's ride, and the backend
+correctly refuses them, which that metric counts as a failed execution.) That shows the labels, validator, executor and scorer are mutually consistent.
 
 Dataset: 455 template-generated cases (labels correct by construction; English, Hinglish, abbreviations,
 typos, relative, weekday and bare-hour times, passenger arithmetic, multi-turn) plus 45 hand-labeled hard
@@ -145,11 +147,17 @@ were chosen on validation only.
 
 * **MAE −27.6% vs seasonal-naive** (95% day-block bootstrap CI 24.1–31.2%), and **−11.7% vs the strongest
   baseline** (CI 8.8–14.6%).
-* The simulator records the true demand rate, so the achievable ceiling is known: an oracle is 33.3% better than
-  seasonal-naive, which means **LightGBM captures 83% of the achievable gain**. The rest is irreducible count noise.
+* The simulator records the true demand rate, so there is a known ceiling: an oracle that predicts that rate is 33.3%
+  better than seasonal-naive, which means **LightGBM captures 83% of the oracle's gain**. The rest is count noise no
+  forecast can remove. (Strictly, MAE is minimized by the median, not the mean, so this is the ceiling for a mean
+  forecast such as LightGBM's Poisson objective.)
 * Largest gains are where last week is a bad guide: academic phase transitions (−44%) and fests (−28%).
 * Ablation (test MAE, one feature group dropped): calendar/events matter most (1.019 → 1.088), then smoothed
   history (→ 1.031), then the rain forecast (→ 1.022).
+* **Same protocol on real data.** Run unchanged on NYC TLC green-taxi pickups (10 zones, a few pickups per 30 min,
+  test Mar–Jun 2024, 58,560 zone-slots), LightGBM cuts MAE by **23.0%** vs seasonal-naive (CI 21.8–24.3%) and by 7.6%
+  vs the 4-week same-weekday mean (CI 6.4–9.0%). Real data has no known true rate, so there is no oracle row.
+  Details: [evals/reports/forecast_report_nyc.md](evals/reports/forecast_report_nyc.md).
 
 **Does the forecast create value?** Held-out requests are replayed through a fleet simulator. Idle drivers
 are rebalanced every 30 min under different policies (25 e-rickshaws, 21 held-out days):
@@ -162,7 +170,7 @@ are rebalanced every 30 min under different policies (25 e-rickshaws, 21 held-ou
 | **LightGBM forecast** | **1.24 min** | **3.04** | 269 | **−12.1%** |
 | Oracle (true future demand) | 1.08 min | 2.74 | 481 | −23.4% |
 
-A naive forecast is *worse* than no forecast: it chases noise, with 2.5× the dead-heading of static stands.
+A naive forecast is *worse* than static stands, which use no forecast at all: it chases noise, with 2.5× the dead-heading of static stands.
 LightGBM cuts mean wait 12.1% over the static heuristic (8.7–13.6% across 20–30 vehicle fleets).
 Details: [evals/reports/forecast_report.md](evals/reports/forecast_report.md),
 [evals/reports/replay_report.md](evals/reports/replay_report.md).

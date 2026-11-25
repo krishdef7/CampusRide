@@ -33,8 +33,8 @@ user ─▶ agent (1 LLM call, forced tool choice) ─▶ validate (deterministi
   deterministic resolution buys.
 * **Versions, freeze points and post-hoc labels.** Test slices and prompt v3 were committed before any test
   run. Error analysis *on test* later found a schema flaw (`ask_clarification` accepted "time", so a model
-  asked for a time on complete bookings). The fix is v4 (agent/variants.py), validated on dev splits; its
-  test numbers are reported as post-hoc, never replacing the frozen v3 results.
+  asked for a time on complete bookings). The fix is v4 (agent/variants.py), validated on dev splits only; any
+  test run of it would be reported as post-hoc, never replacing the frozen v3 results.
 * **Free-tier engineering.** Client-side RPM limiting, retry with server-suggested backoff, a response cache
   that makes interrupted runs resumable, and latency that excludes quota waits (otherwise p95 measures the
   rate limiter, not the model). Gemini 3 thought signatures are round-tripped on tool calls.
@@ -49,7 +49,7 @@ user ─▶ agent (1 LLM call, forced tool choice) ─▶ validate (deterministi
   selection with the ride row locked first.
 * **The database enforces the invariant.** A partial unique index `rides(driver_id) WHERE status IN
   ('assigned','in_progress')` makes a double assignment impossible to commit, whatever the
-  application code does. The load test also verifies it after the fact by checking historical interval overlaps.
+  application code does. The load test also verifies it after the fact from a sequence-numbered audit of every driver status change (below).
 * **Why KNN top-K rather than "all drivers in radius, sorted"?** On a dense campus nearly every driver
   is inside the radius, so radius-sort work grows with fleet size. KNN over the GiST index is
   O(log n + K). `loadtest/bench_matching_query.py` measures both, plus a no-index version and an
